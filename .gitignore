@@ -67,3 +67,6 @@ ENV/
 *.tmp
 tmp/
 temp/
+
+# Port allocation (local configuration)
+PORT_ALLOCATION.md
