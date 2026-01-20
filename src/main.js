@@ -3,9 +3,17 @@
  * 俄羅斯方塊遊戲主程式入口
  */
 
-// 模組導入將在後續步驟中添加
-// import { Game } from './Game.js';
+import { Game } from './Game.js';
 
-console.log('Tetris Game initialized');
+// 等待 DOM 載入完成後初始化遊戲
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('Tetris Game initializing...');
 
-// 遊戲將在後續步驟中初始化
+    // 建立遊戲實例
+    const game = new Game();
+
+    // 將遊戲實例暴露給全域（用於除錯）
+    window.tetrisGame = game;
+
+    console.log('Tetris Game ready! Press Enter to start.');
+});
