@@ -12,21 +12,76 @@
             <h1>TETRIS</h1>
         </header>
 
+        <!-- 關卡資訊區 -->
+        <div id="stage-info">
+            <div id="stage-display">
+                <span class="stage-label">關卡</span>
+                <span id="stage-number">1</span>
+            </div>
+            <div id="stage-mission">
+                <span id="mission-text">消除 10 行過關</span>
+            </div>
+            <div id="stage-progress">
+                <div id="progress-bar">
+                    <div id="progress-fill"></div>
+                </div>
+                <span id="progress-text">0 / 10</span>
+            </div>
+            <div id="time-limit" class="hidden">
+                <span class="time-icon">⏱️</span>
+                <span id="time-remaining">8.0</span>
+            </div>
+        </div>
+
         <main id="game-area">
-            <!-- Hold 區塊 -->
-            <aside id="hold-section">
-                <h3>HOLD</h3>
-                <canvas id="hold-canvas" width="100" height="100"></canvas>
-                <p class="hint">按 C 暫存</p>
+            <!-- Hold 與道具區塊 -->
+            <aside id="left-section">
+                <div id="hold-section">
+                    <h3>HOLD</h3>
+                    <canvas id="hold-canvas" width="100" height="100"></canvas>
+                    <p class="hint">按 C 暫存</p>
+                </div>
+
+                <!-- 道具欄 -->
+                <div id="items-section">
+                    <h3>道具</h3>
+                    <div id="item-slots">
+                        <div class="item-slot" data-slot="1">
+                            <span class="item-key">1</span>
+                            <span class="item-icon"></span>
+                        </div>
+                        <div class="item-slot" data-slot="2">
+                            <span class="item-key">2</span>
+                            <span class="item-icon"></span>
+                        </div>
+                        <div class="item-slot" data-slot="3">
+                            <span class="item-key">3</span>
+                            <span class="item-icon"></span>
+                        </div>
+                    </div>
+                    <p class="hint">按 1-3 使用</p>
+                </div>
             </aside>
 
             <!-- 主遊戲區域 -->
             <section id="board-section">
                 <canvas id="game-canvas"></canvas>
+                <!-- 遊戲特效層 -->
+                <div id="effect-layer">
+                    <div id="combo-display" class="hidden"></div>
+                    <div id="clear-type-display" class="hidden"></div>
+                </div>
                 <div id="overlay">
                     <div id="overlay-content">
                         <h2 id="overlay-title">TETRIS</h2>
                         <p id="overlay-message">按 Enter 開始遊戲</p>
+                        <div id="stage-info-overlay" class="hidden">
+                            <div class="stage-details">
+                                <h3>關卡 <span id="overlay-stage">1</span></h3>
+                                <p id="overlay-mission"></p>
+                                <ul id="overlay-features"></ul>
+                            </div>
+                        </div>
                         <div id="high-scores" class="hidden">
                             <h3>排行榜</h3>
                             <ol id="score-list"></ol>
@@ -50,10 +105,6 @@
                         <span id="score" class="stat-value">0</span>
                     </div>
                     <div class="stat-item">
-                        <span class="stat-label">等級</span>
-                        <span id="level" class="stat-value">1</span>
-                    </div>
-                    <div class="stat-item">
                         <span class="stat-label">消除行數</span>
                         <span id="lines" class="stat-value">0</span>
                     </div>
@@ -62,11 +113,17 @@
                         <span id="combo" class="stat-value">0</span>
                     </div>
                 </div>
+
+                <!-- 負面效果顯示 -->
+                <div id="debuff-section" class="hidden">
+                    <h3>狀態</h3>
+                    <div id="active-debuffs"></div>
+                </div>
             </aside>
         </main>
 
         <footer id="controls-hint">
-            <p>← → 移動 | ↑ 旋轉 | ↓ 快降 | 空白鍵 瞬降 | C 暫存 | P 暫停 | R 重新開始</p>
+            <p>← → 移動 | ↑ 旋轉 | ↓ 快降 | 空白鍵 瞬降 | C 暫存 | 1-3 道具 | P 暫停 | R 重新開始</p>
         </footer>
     </div>
 
@@ -77,25 +134,125 @@
     const BLOCK_SIZE = 30;
     const PREVIEW_BLOCK_SIZE = 20;
 
-    const INITIAL_DROP_INTERVAL = 1000;
-    const MIN_DROP_INTERVAL = 50;
     const LOCK_DELAY = 500;
     const LOCK_DELAY_RESET_LIMIT = 15;
 
-    const LINES_PER_LEVEL = 10;
-    const MAX_LEVEL = 15;
-    const SPEED_DECREASE_PER_LEVEL = 50;
-
     const SCORE_TABLE = { 1: 100, 2: 300, 3: 500, 4: 800 };
-    const SOFT_DROP_SCORE = 1;
-    const HARD_DROP_SCORE = 2;
     const COMBO_BONUS = 50;
 
     const COLORS = {
         I: '#00d4ff', O: '#ffd700', T: '#9b59b6', S: '#2ecc71',
         Z: '#e74c3c', J: '#3498db', L: '#e67e22',
-        ghost: 'rgba(255, 255, 255, 0.2)'
+        ghost: 'rgba(255, 255, 255, 0.2)',
+        obstacle: '#6b6b6b',
+        item_good: '#00ff88',
+        item_bad: '#ff4444'
     };
+
+    // 關卡定義
+    const STAGES = {
+        1: {
+            name: '入門',
+            targetLines: 10,
+            dropInterval: 1000,
+            mission: '消除 10 行過關',
+            features: ['有利道具開始出現'],
+            hasGoodItems: true,
+            hasBadItems: false,
+            hasObstacles: false,
+            hasTimeLimit: false,
+            goodItemChance: 0.15,
+            obstacleCount: 0
+        },
+        2: {
+            name: '練習',
+            targetLines: 15,
+            dropInterval: 900,
+            mission: '消除 15 行過關',
+            features: ['道具出現機率提升'],
+            hasGoodItems: true,
+            hasBadItems: false,
+            hasObstacles: false,
+            hasTimeLimit: false,
+            goodItemChance: 0.20,
+            obstacleCount: 0
+        },
+        3: {
+            name: '障礙',
+            targetLines: 20,
+            dropInterval: 800,
+            mission: '消除 20 行過關',
+            features: ['石頭障礙物出現', '障礙物無法消除'],
+            hasGoodItems: true,
+            hasBadItems: false,
+            hasObstacles: true,
+            hasTimeLimit: false,
+            goodItemChance: 0.20,
+            obstacleCount: 5
+        },
+        4: {
+            name: '限時',
+            targetLines: 25,
+            dropInterval: 700,
+            mission: '消除 25 行過關',
+            features: ['每塊方塊有 8 秒放置時間', '超時方塊會消失'],
+            hasGoodItems: true,
+            hasBadItems: false,
+            hasObstacles: true,
+            hasTimeLimit: true,
+            timeLimit: 8000,
+            goodItemChance: 0.20,
+            obstacleCount: 4
+        },
+        5: {
+            name: '危機',
+            targetLines: 30,
+            dropInterval: 600,
+            mission: '消除 30 行過關',
+            features: ['出局道具開始出現', '小心負面效果'],
+            hasGoodItems: true,
+            hasBadItems: true,
+            hasObstacles: true,
+            hasTimeLimit: true,
+            timeLimit: 8000,
+            goodItemChance: 0.18,
+            badItemChance: 0.10,
+            obstacleCount: 4
+        },
+        6: {
+            name: '終極挑戰',
+            targetLines: 40,
+            dropInterval: 500,
+            mission: '消除 40 行過關',
+            features: ['所有機制同時啟用', '速度最快', '祝你好運！'],
+            hasGoodItems: true,
+            hasBadItems: true,
+            hasObstacles: true,
+            hasTimeLimit: true,
+            timeLimit: 8000,
+            goodItemChance: 0.15,
+            badItemChance: 0.12,
+            obstacleCount: 6
+        }
+    };
+
+    const MAX_STAGE = 6;
+
+    // 道具定義
+    const GOOD_ITEMS = {
+        bomb: { name: '炸彈', icon: '💣', description: '清除周圍 3×3 範圍' },
+        lineClear: { name: '消行器', icon: '⚡', description: '清除最底下 1 行' },
+        freeze: { name: '時間凍結', icon: '❄️', description: '暫停下落 5 秒' },
+        transform: { name: '變形器', icon: '🔄', description: '將當前方塊變成 I 型' }
+    };
+
+    const BAD_ITEMS = {
+        speedUp: { name: '加速', icon: '⬇️', description: '下落速度加倍 10 秒', duration: 10000 },
+        fog: { name: '迷霧', icon: '🌫️', description: '遮擋部分視野 8 秒', duration: 8000 },
+        reverse: { name: '反轉', icon: '↔️', description: '左右控制反轉 8 秒', duration: 8000 }
+    };
+
+    const MAX_ITEM_SLOTS = 3;
 
     const SHAPES = {
         I: [
@@ -223,19 +380,27 @@
             this.cols = COLS;
             this.rows = ROWS;
             this.grid = this.createEmptyGrid();
+            this.obstacles = []; // 障礙物位置列表
         }
 
         createEmptyGrid() {
             return Array.from({ length: this.rows }, () => Array(this.cols).fill(null));
         }
 
-        reset() { this.grid = this.createEmptyGrid(); }
+        reset() {
+            this.grid = this.createEmptyGrid();
+            this.obstacles = [];
+        }
 
         isEmpty(x, y) {
             if (x < 0 || x >= this.cols) return false;
             if (y >= this.rows) return false;
             if (y < 0) return true;
             return this.grid[y][x] === null;
+        }
+
+        isObstacle(x, y) {
+            return this.obstacles.some(o => o.x === x && o.y === y);
         }
 
         collides(piece, offsetX = 0, offsetY = 0, shape = null) {
@@ -259,11 +424,19 @@
         clearLines() {
             const cleared = [];
             for (let row = this.rows - 1; row >= 0; row--) {
+                // 檢查是否有障礙物，有的話跳過
+                const hasObstacle = this.obstacles.some(o => o.y === row);
+                if (hasObstacle) continue;
+
                 if (this.grid[row].every(cell => cell !== null)) cleared.push(row);
             }
             cleared.forEach((line, i) => {
                 this.grid.splice(line + i, 1);
                 this.grid.unshift(Array(this.cols).fill(null));
+                // 更新障礙物位置（在被清除行上方的要下移）
+                this.obstacles.forEach(o => {
+                    if (o.y < line + i) o.y++;
+                });
             });
             return cleared;
         }
@@ -303,6 +476,70 @@
                 }
             }
         }
+
+        // 障礙物相關方法
+        placeObstacles(count) {
+            this.obstacles = [];
+            const minRow = 10; // 障礙物只放在下半部
+            const maxRow = this.rows - 2;
+
+            for (let i = 0; i < count; i++) {
+                let attempts = 0;
+                while (attempts < 50) {
+                    const x = Math.floor(Math.random() * this.cols);
+                    const y = minRow + Math.floor(Math.random() * (maxRow - minRow));
+
+                    // 確保位置不重複且沒有方塊
+                    if (!this.isObstacle(x, y) && this.grid[y][x] === null) {
+                        this.obstacles.push({ x, y });
+                        this.grid[y][x] = 'obstacle';
+                        break;
+                    }
+                    attempts++;
+                }
+            }
+        }
+
+        clearObstacles() {
+            this.obstacles.forEach(o => {
+                if (this.grid[o.y] && this.grid[o.y][o.x] === 'obstacle') {
+                    this.grid[o.y][o.x] = null;
+                }
+            });
+            this.obstacles = [];
+        }
+
+        // 道具效果相關方法
+        clearArea(startX, startY, width, height) {
+            for (let y = startY; y < startY + height; y++) {
+                for (let x = startX; x < startX + width; x++) {
+                    if (y >= 0 && y < this.rows && x >= 0 && x < this.cols) {
+                        // 不清除障礙物
+                        if (!this.isObstacle(x, y)) {
+                            this.grid[y][x] = null;
+                        }
+                    }
+                }
+            }
+        }
+
+        clearBottomLine() {
+            // 找到最底部沒有障礙物的行
+            for (let row = this.rows - 1; row >= 0; row--) {
+                const hasObstacle = this.obstacles.some(o => o.y === row);
+                if (!hasObstacle) {
+                    this.grid.splice(row, 1);
+                    this.grid.unshift(Array(this.cols).fill(null));
+                    // 更新障礙物位置
+                    this.obstacles.forEach(o => {
+                        if (o.y < row) o.y++;
+                    });
+                    return;
+                }
+            }
+        }
+
+        getObstacles() { return this.obstacles; }
     }
 
     // ============== Renderer Class ==============
@@ -320,7 +557,6 @@
             this.nextCtxs = this.nextCanvases.map(c => c.getContext('2d'));
 
             this.scoreEl = document.getElementById('score');
-            this.levelEl = document.getElementById('level');
             this.linesEl = document.getElementById('lines');
             this.comboEl = document.getElementById('combo');
             this.overlay = document.getElementById('overlay');
@@ -329,10 +565,25 @@
             this.highScoresDiv = document.getElementById('high-scores');
             this.scoreList = document.getElementById('score-list');
 
+            // 新增 UI 元素
+            this.stageNumber = document.getElementById('stage-number');
+            this.missionText = document.getElementById('mission-text');
+            this.progressFill = document.getElementById('progress-fill');
+            this.progressText = document.getElementById('progress-text');
+            this.timeLimitDiv = document.getElementById('time-limit');
+            this.timeRemaining = document.getElementById('time-remaining');
+            this.itemSlots = document.querySelectorAll('.item-slot');
+            this.debuffSection = document.getElementById('debuff-section');
+            this.activeDebuffs = document.getElementById('active-debuffs');
+            this.comboDisplay = document.getElementById('combo-display');
+            this.clearTypeDisplay = document.getElementById('clear-type-display');
+
             this.gameCanvas.width = COLS * BLOCK_SIZE;
             this.gameCanvas.height = ROWS * BLOCK_SIZE;
             this.holdCanvas.width = this.holdCanvas.height = 4 * PREVIEW_BLOCK_SIZE + 10;
             this.nextCanvases.forEach(c => { c.width = c.height = 4 * PREVIEW_BLOCK_SIZE + 10; });
+
+            this.effectTimers = {};
         }
 
         clearGameCanvas() {
@@ -357,12 +608,22 @@
             }
         }
 
-        drawBlock(ctx, x, y, color, size = BLOCK_SIZE, isGhost = false) {
+        drawBlock(ctx, x, y, color, size = BLOCK_SIZE, isGhost = false, isObstacle = false) {
             const p = 1, inner = size - p * 2;
             if (isGhost) {
                 ctx.strokeStyle = COLORS.ghost;
                 ctx.lineWidth = 2;
                 ctx.strokeRect(x * size + p, y * size + p, inner, inner);
+            } else if (isObstacle) {
+                // 繪製石頭障礙物
+                ctx.fillStyle = COLORS.obstacle;
+                ctx.fillRect(x * size + p, y * size + p, inner, inner);
+                // 石頭紋理
+                ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                ctx.fillRect(x * size + p + 5, y * size + p + 5, 8, 8);
+                ctx.fillRect(x * size + p + 15, y * size + p + 12, 6, 6);
+                ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                ctx.fillRect(x * size + p + 3, y * size + p + 3, 4, 4);
             } else {
                 ctx.fillStyle = color;
                 ctx.fillRect(x * size + p, y * size + p, inner, inner);
@@ -376,14 +637,36 @@
         }
 
         drawBoard(board) {
-            board.forEachCell((x, y, color) => this.drawBlock(this.gameCtx, x, y, color));
+            board.forEachCell((x, y, color) => {
+                if (color === 'obstacle') {
+                    this.drawBlock(this.gameCtx, x, y, COLORS.obstacle, BLOCK_SIZE, false, true);
+                } else {
+                    this.drawBlock(this.gameCtx, x, y, color);
+                }
+            });
         }
 
         drawPiece(piece) {
             if (!piece) return;
+            let color = piece.color;
+            // 道具方塊特效
+            if (piece.isItemPiece) {
+                color = piece.itemType === 'good' ? COLORS.item_good : COLORS.item_bad;
+            }
             piece.forEachBlock((lx, ly, gx, gy) => {
-                if (gy >= 0) this.drawBlock(this.gameCtx, gx, gy, piece.color);
+                if (gy >= 0) this.drawBlock(this.gameCtx, gx, gy, color);
             });
+            // 道具方塊閃爍邊框
+            if (piece.isItemPiece) {
+                const glowColor = piece.itemType === 'good' ? 'rgba(0, 255, 136, 0.6)' : 'rgba(255, 68, 68, 0.6)';
+                piece.forEachBlock((lx, ly, gx, gy) => {
+                    if (gy >= 0) {
+                        this.gameCtx.strokeStyle = glowColor;
+                        this.gameCtx.lineWidth = 2;
+                        this.gameCtx.strokeRect(gx * BLOCK_SIZE, gy * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                    }
+                });
+            }
         }
 
         drawGhost(piece, ghostY) {
@@ -396,6 +679,16 @@
                     }
                 }
             }
+        }
+
+        drawFog() {
+            // 繪製迷霧效果（遮擋上半部）
+            const gradient = this.gameCtx.createLinearGradient(0, 0, 0, this.gameCanvas.height * 0.6);
+            gradient.addColorStop(0, 'rgba(50, 50, 50, 0.95)');
+            gradient.addColorStop(0.7, 'rgba(50, 50, 50, 0.7)');
+            gradient.addColorStop(1, 'rgba(50, 50, 50, 0)');
+            this.gameCtx.fillStyle = gradient;
+            this.gameCtx.fillRect(0, 0, this.gameCanvas.width, this.gameCanvas.height * 0.6);
         }
 
         drawPreviewPiece(ctx, piece) {
@@ -431,11 +724,104 @@
         }
 
         updateScore(s) { this.scoreEl.textContent = s.toLocaleString(); }
-        updateLevel(l) { this.levelEl.textContent = l; }
         updateLines(l) { this.linesEl.textContent = l; }
         updateCombo(c) {
             this.comboEl.textContent = c;
             this.comboEl.style.color = c > 0 ? '#ffd700' : '#00d4ff';
+        }
+
+        updateStage(stageNum, stageConfig) {
+            this.stageNumber.textContent = stageNum;
+            this.missionText.textContent = stageConfig.mission;
+        }
+
+        updateProgress(current, target) {
+            const percent = Math.min(100, (current / target) * 100);
+            this.progressFill.style.width = percent + '%';
+            this.progressText.textContent = `${current} / ${target}`;
+        }
+
+        updateTimeLimit(remaining, show) {
+            if (show) {
+                this.timeLimitDiv.classList.remove('hidden');
+                this.timeRemaining.textContent = remaining.toFixed(1);
+                // 時間緊迫時變紅
+                if (remaining <= 3) {
+                    this.timeRemaining.style.color = '#ff4444';
+                } else {
+                    this.timeRemaining.style.color = '#00d4ff';
+                }
+            } else {
+                this.timeLimitDiv.classList.add('hidden');
+            }
+        }
+
+        updateItems(slots) {
+            slots.forEach((item, i) => {
+                const slot = this.itemSlots[i];
+                const iconEl = slot.querySelector('.item-icon');
+                if (item && GOOD_ITEMS[item]) {
+                    iconEl.textContent = GOOD_ITEMS[item].icon;
+                    slot.classList.add('has-item');
+                    slot.title = GOOD_ITEMS[item].description;
+                } else {
+                    iconEl.textContent = '';
+                    slot.classList.remove('has-item');
+                    slot.title = '';
+                }
+            });
+        }
+
+        updateDebuffs(debuffs) {
+            const debuffKeys = Object.keys(debuffs);
+            if (debuffKeys.length === 0) {
+                this.debuffSection.classList.add('hidden');
+                return;
+            }
+            this.debuffSection.classList.remove('hidden');
+            this.activeDebuffs.innerHTML = debuffKeys.map(key => {
+                const info = BAD_ITEMS[key];
+                const remaining = Math.ceil((debuffs[key].duration - (Date.now() - debuffs[key].startTime)) / 1000);
+                return `<div class="debuff-item">${info.icon} ${remaining}s</div>`;
+            }).join('');
+        }
+
+        showEffect(type, value) {
+            let el, className;
+            switch (type) {
+                case 'combo':
+                    el = this.comboDisplay;
+                    el.textContent = value + ' COMBO!';
+                    className = 'show-combo';
+                    break;
+                case 'clear':
+                    el = this.clearTypeDisplay;
+                    el.textContent = value;
+                    className = 'show-clear';
+                    break;
+                case 'item':
+                case 'debuff':
+                case 'stage':
+                    el = this.clearTypeDisplay;
+                    el.textContent = value;
+                    className = type === 'debuff' ? 'show-debuff' : 'show-clear';
+                    break;
+                default:
+                    return;
+            }
+
+            if (this.effectTimers[type]) {
+                clearTimeout(this.effectTimers[type]);
+            }
+
+            el.classList.remove('hidden', 'show-combo', 'show-clear', 'show-debuff');
+            void el.offsetWidth; // 觸發重繪
+            el.classList.add(className);
+
+            this.effectTimers[type] = setTimeout(() => {
+                el.classList.add('hidden');
+                el.classList.remove(className);
+            }, 1500);
         }
 
         showOverlay(title, msg, scores = null) {
@@ -452,40 +838,157 @@
 
         hideOverlay() { this.overlay.classList.add('hidden'); }
 
-        render(board, piece, ghostY, holdPiece, canHold, nextPieces) {
+        render(board, piece, ghostY, holdPiece, canHold, nextPieces, hasFog = false) {
             this.clearGameCanvas();
             this.drawGrid();
             this.drawBoard(board);
             this.drawGhost(piece, ghostY);
             this.drawPiece(piece);
+            if (hasFog) this.drawFog();
             this.drawHold(holdPiece, canHold);
             this.drawNextPieces(nextPieces);
+        }
+    }
+
+    // ============== StageManager Class ==============
+    class StageManager {
+        constructor() {
+            this.reset();
+        }
+
+        reset() {
+            this.currentStage = 1;
+            this.stageLines = 0;
+        }
+
+        getStage() { return this.currentStage; }
+        getStageConfig() { return STAGES[this.currentStage]; }
+        getStageLines() { return this.stageLines; }
+        getTargetLines() { return this.getStageConfig().targetLines; }
+        getDropInterval() { return this.getStageConfig().dropInterval; }
+
+        addLines(n) {
+            this.stageLines += n;
+            const target = this.getTargetLines();
+            if (this.stageLines >= target) {
+                return this.advanceStage();
+            }
+            return { stageCleared: false };
+        }
+
+        advanceStage() {
+            if (this.currentStage >= MAX_STAGE) {
+                return { stageCleared: true, gameComplete: true };
+            }
+            this.currentStage++;
+            this.stageLines = 0;
+            return { stageCleared: true, gameComplete: false, newStage: this.currentStage };
+        }
+
+        hasGoodItems() { return this.getStageConfig().hasGoodItems; }
+        hasBadItems() { return this.getStageConfig().hasBadItems; }
+        hasObstacles() { return this.getStageConfig().hasObstacles; }
+        hasTimeLimit() { return this.getStageConfig().hasTimeLimit; }
+        getTimeLimit() { return this.getStageConfig().timeLimit || 8000; }
+        getGoodItemChance() { return this.getStageConfig().goodItemChance || 0; }
+        getBadItemChance() { return this.getStageConfig().badItemChance || 0; }
+        getObstacleCount() { return this.getStageConfig().obstacleCount || 0; }
+    }
+
+    // ============== ItemManager Class ==============
+    class ItemManager {
+        constructor() {
+            this.reset();
+        }
+
+        reset() {
+            this.slots = [null, null, null];
+            this.activeDebuffs = {};
+        }
+
+        getSlots() { return this.slots; }
+        getActiveDebuffs() { return this.activeDebuffs; }
+
+        addItem(itemType) {
+            const emptySlot = this.slots.findIndex(s => s === null);
+            if (emptySlot === -1) return false;
+            this.slots[emptySlot] = itemType;
+            return true;
+        }
+
+        useItem(slotIndex) {
+            if (slotIndex < 0 || slotIndex >= MAX_ITEM_SLOTS) return null;
+            const item = this.slots[slotIndex];
+            if (item) {
+                this.slots[slotIndex] = null;
+            }
+            return item;
+        }
+
+        getRandomGoodItem() {
+            const items = Object.keys(GOOD_ITEMS);
+            return items[Math.floor(Math.random() * items.length)];
+        }
+
+        getRandomBadItem() {
+            const items = Object.keys(BAD_ITEMS);
+            return items[Math.floor(Math.random() * items.length)];
+        }
+
+        applyDebuff(debuffType) {
+            const debuff = BAD_ITEMS[debuffType];
+            if (!debuff) return;
+
+            if (this.activeDebuffs[debuffType]) {
+                clearTimeout(this.activeDebuffs[debuffType].timer);
+            }
+
+            this.activeDebuffs[debuffType] = {
+                startTime: Date.now(),
+                duration: debuff.duration,
+                timer: setTimeout(() => {
+                    delete this.activeDebuffs[debuffType];
+                }, debuff.duration)
+            };
+        }
+
+        hasDebuff(debuffType) {
+            return !!this.activeDebuffs[debuffType];
+        }
+
+        clearAllDebuffs() {
+            Object.values(this.activeDebuffs).forEach(d => {
+                if (d.timer) clearTimeout(d.timer);
+            });
+            this.activeDebuffs = {};
+        }
+
+        getDebuffTimeRemaining(debuffType) {
+            const debuff = this.activeDebuffs[debuffType];
+            if (!debuff) return 0;
+            const elapsed = Date.now() - debuff.startTime;
+            return Math.max(0, debuff.duration - elapsed);
         }
     }
 
     // ============== ScoreManager Class ==============
     class ScoreManager {
         constructor() { this.reset(); this.storageKey = 'tetris_high_scores'; }
-        reset() { this.score = 0; this.level = 1; this.lines = 0; this.combo = 0; }
+        reset() { this.score = 0; this.lines = 0; this.combo = 0; }
 
-        addLineScore(n) {
-            if (n === 0) { this.combo = 0; return { score: 0, levelUp: false }; }
-            let s = (SCORE_TABLE[n] || 0) * this.level;
-            if (this.combo > 0) s += COMBO_BONUS * this.combo * this.level;
+        addLineScore(n, stage = 1) {
+            if (n === 0) { this.combo = 0; return { score: 0, clearType: null }; }
+            let s = (SCORE_TABLE[n] || 0) * stage;
+            if (this.combo > 0) s += COMBO_BONUS * this.combo * stage;
             this.combo++;
             this.score += s;
             this.lines += n;
-            const newLvl = Math.min(Math.floor(this.lines / LINES_PER_LEVEL) + 1, MAX_LEVEL);
-            const up = newLvl > this.level;
-            this.level = newLvl;
-            return { score: s, levelUp: up };
+
+            const clearTypes = { 1: 'SINGLE', 2: 'DOUBLE', 3: 'TRIPLE', 4: 'TETRIS' };
+            return { score: s, clearType: clearTypes[n] || null, combo: this.combo };
         }
 
-        addSoftDropScore(n = 1) { this.score += SOFT_DROP_SCORE * n; }
-        addHardDropScore(n) { this.score += HARD_DROP_SCORE * n; }
-        getDropInterval() { return Math.max(INITIAL_DROP_INTERVAL - (this.level - 1) * SPEED_DECREASE_PER_LEVEL, MIN_DROP_INTERVAL); }
         getScore() { return this.score; }
-        getLevel() { return this.level; }
         getLines() { return this.lines; }
         getCombo() { return this.combo; }
 
@@ -533,6 +1036,10 @@
             if (KEY_BINDINGS.ROTATE_CW.includes(k)) { this.cb.onRotateCW(); return; }
             if (KEY_BINDINGS.ROTATE_CCW.includes(k)) { this.cb.onRotateCCW(); return; }
             if (KEY_BINDINGS.HOLD.includes(k)) { this.cb.onHold(); return; }
+            // 道具按鍵 1, 2, 3
+            if (k === 'Digit1' || k === 'Numpad1') { this.cb.onUseItem(0); return; }
+            if (k === 'Digit2' || k === 'Numpad2') { this.cb.onUseItem(1); return; }
+            if (k === 'Digit3' || k === 'Numpad3') { this.cb.onUseItem(2); return; }
         }
 
         onKeyUp(e) {
@@ -546,7 +1053,8 @@
         isGameKey(k) {
             return [...KEY_BINDINGS.LEFT, ...KEY_BINDINGS.RIGHT, ...KEY_BINDINGS.SOFT_DROP,
                 ...KEY_BINDINGS.HARD_DROP, ...KEY_BINDINGS.ROTATE_CW, ...KEY_BINDINGS.ROTATE_CCW,
-                ...KEY_BINDINGS.HOLD, ...KEY_BINDINGS.PAUSE, ...KEY_BINDINGS.RESTART].includes(k);
+                ...KEY_BINDINGS.HOLD, ...KEY_BINDINGS.PAUSE, ...KEY_BINDINGS.RESTART,
+                'Digit1', 'Digit2', 'Digit3', 'Numpad1', 'Numpad2', 'Numpad3'].includes(k);
         }
 
         startRepeat(action, fn) {
@@ -573,6 +1081,8 @@
             this.board = new Board();
             this.renderer = new Renderer();
             this.scoreManager = new ScoreManager();
+            this.stageManager = new StageManager();
+            this.itemManager = new ItemManager();
             this.pieceBag = new PieceBag();
 
             this.state = GAME_STATE.IDLE;
@@ -582,12 +1092,24 @@
             this.nextPieces = [];
 
             this.lastDropTime = 0;
-            this.dropInterval = this.scoreManager.getDropInterval();
+            this.dropInterval = 1000;
             this.isLocking = false;
             this.lockStartTime = 0;
             this.lockResetCount = 0;
             this.animationId = null;
             this.lastTime = 0;
+
+            // 時間限制相關
+            this.pieceSpawnTime = 0;
+            this.timeLimitWarning = false;
+
+            // 凍結效果
+            this.isFrozen = false;
+            this.freezeEndTime = 0;
+
+            // 道具方塊標記
+            this.currentPieceHasItem = false;
+            this.currentItemType = null;
 
             this.inputHandler = new InputHandler({
                 onLeft: () => this.moveLeft(),
@@ -599,7 +1121,8 @@
                 onHold: () => this.hold(),
                 onPause: () => this.togglePause(),
                 onRestart: () => this.restart(),
-                onStart: () => this.start()
+                onStart: () => this.start(),
+                onUseItem: (slot) => this.useItem(slot)
             });
 
             this.initDisplay();
@@ -609,9 +1132,11 @@
             const hs = this.scoreManager.getHighScores();
             this.renderer.showOverlay('TETRIS', '按 Enter 開始遊戲', hs);
             this.renderer.updateScore(0);
-            this.renderer.updateLevel(1);
             this.renderer.updateLines(0);
             this.renderer.updateCombo(0);
+            this.renderer.updateStage(1, STAGES[1]);
+            this.renderer.updateProgress(0, STAGES[1].targetLines);
+            this.renderer.updateItems([null, null, null]);
             this.renderer.clearGameCanvas();
             this.renderer.drawGrid();
         }
@@ -620,12 +1145,19 @@
             if (this.state === GAME_STATE.PLAYING) return;
             this.board.reset();
             this.scoreManager.reset();
+            this.stageManager.reset();
+            this.itemManager.reset();
             this.pieceBag = new PieceBag();
             this.holdPiece = null;
             this.canHold = true;
             this.isLocking = false;
             this.lockResetCount = 0;
-            this.dropInterval = this.scoreManager.getDropInterval();
+            this.isFrozen = false;
+            this.freezeEndTime = 0;
+            this.dropInterval = this.stageManager.getDropInterval();
+
+            // 初始化障礙物（如果有）
+            this.initObstacles();
 
             this.nextPieces = [];
             for (let i = 0; i < 3; i++) this.nextPieces.push(new Piece(this.pieceBag.next()));
@@ -639,6 +1171,12 @@
             this.gameLoop(this.lastTime);
         }
 
+        initObstacles() {
+            if (!this.stageManager.hasObstacles()) return;
+            const count = this.stageManager.getObstacleCount();
+            this.board.placeObstacles(count);
+        }
+
         gameLoop(time) {
             if (this.state !== GAME_STATE.PLAYING) { this.animationId = null; return; }
             this.lastTime = time;
@@ -648,12 +1186,41 @@
         }
 
         update(time) {
+            // 檢查凍結效果
+            if (this.isFrozen && time >= this.freezeEndTime) {
+                this.isFrozen = false;
+            }
+
             if (!this.currentPiece) return;
+
+            // 檢查時間限制
+            if (this.stageManager.hasTimeLimit() && !this.isFrozen) {
+                const elapsed = time - this.pieceSpawnTime;
+                const limit = this.stageManager.getTimeLimit();
+                const remaining = Math.max(0, (limit - elapsed) / 1000);
+                this.renderer.updateTimeLimit(remaining, true);
+
+                if (elapsed >= limit) {
+                    // 時間到，方塊消失
+                    this.currentPiece = null;
+                    this.spawnPiece();
+                    this.lastDropTime = time;
+                    return;
+                }
+            }
+
             if (this.isLocking) {
                 if (time - this.lockStartTime >= LOCK_DELAY) this.lockPiece();
                 return;
             }
-            if (time - this.lastDropTime >= this.dropInterval) {
+
+            // 計算實際下落間隔（考慮加速 debuff）
+            let actualInterval = this.dropInterval;
+            if (this.itemManager.hasDebuff('speedUp')) {
+                actualInterval = this.dropInterval / 2;
+            }
+
+            if (!this.isFrozen && time - this.lastDropTime >= actualInterval) {
                 this.drop();
                 this.lastDropTime = time;
             }
@@ -661,7 +1228,9 @@
 
         render() {
             const ghostY = this.currentPiece ? this.board.getGhostY(this.currentPiece) : 0;
-            this.renderer.render(this.board, this.currentPiece, ghostY, this.holdPiece, this.canHold, this.nextPieces);
+            const hasFog = this.itemManager.hasDebuff('fog');
+            this.renderer.render(this.board, this.currentPiece, ghostY, this.holdPiece, this.canHold, this.nextPieces, hasFog);
+            this.renderer.updateDebuffs(this.itemManager.getActiveDebuffs());
         }
 
         spawnPiece() {
@@ -670,10 +1239,32 @@
             const sx = this.board.getSpawnX(this.currentPiece);
             const sy = this.board.getSpawnY();
             this.currentPiece.setPosition(sx, sy);
+
             if (this.board.collides(this.currentPiece, 0, 0)) { this.gameOver(); return; }
+
             this.canHold = true;
             this.isLocking = false;
             this.lockResetCount = 0;
+            this.pieceSpawnTime = performance.now();
+
+            // 決定是否為道具方塊
+            this.currentPieceHasItem = false;
+            this.currentItemType = null;
+
+            if (this.stageManager.hasGoodItems() && Math.random() < this.stageManager.getGoodItemChance()) {
+                this.currentPieceHasItem = true;
+                this.currentItemType = { type: 'good', item: this.itemManager.getRandomGoodItem() };
+                this.currentPiece.isItemPiece = true;
+                this.currentPiece.itemType = 'good';
+            } else if (this.stageManager.hasBadItems() && Math.random() < this.stageManager.getBadItemChance()) {
+                this.currentPieceHasItem = true;
+                this.currentItemType = { type: 'bad', item: this.itemManager.getRandomBadItem() };
+                this.currentPiece.isItemPiece = true;
+                this.currentPiece.itemType = 'bad';
+                // 立即觸發負面效果
+                this.itemManager.applyDebuff(this.currentItemType.item);
+                this.renderer.showEffect('debuff', BAD_ITEMS[this.currentItemType.item].name);
+            }
         }
 
         drop() {
@@ -688,26 +1279,28 @@
 
         moveLeft() {
             if (this.state !== GAME_STATE.PLAYING || !this.currentPiece) return;
-            if (!this.board.collides(this.currentPiece, -1, 0)) {
-                this.currentPiece.move(-1, 0);
+            // 反轉控制 debuff
+            const direction = this.itemManager.hasDebuff('reverse') ? 1 : -1;
+            if (!this.board.collides(this.currentPiece, direction, 0)) {
+                this.currentPiece.move(direction, 0);
                 this.resetLock();
             }
         }
 
         moveRight() {
             if (this.state !== GAME_STATE.PLAYING || !this.currentPiece) return;
-            if (!this.board.collides(this.currentPiece, 1, 0)) {
-                this.currentPiece.move(1, 0);
+            // 反轉控制 debuff
+            const direction = this.itemManager.hasDebuff('reverse') ? -1 : 1;
+            if (!this.board.collides(this.currentPiece, direction, 0)) {
+                this.currentPiece.move(direction, 0);
                 this.resetLock();
             }
         }
 
         softDrop() {
-            if (this.state !== GAME_STATE.PLAYING || !this.currentPiece) return;
+            if (this.state !== GAME_STATE.PLAYING || !this.currentPiece || this.isFrozen) return;
             if (!this.board.collides(this.currentPiece, 0, 1)) {
                 this.currentPiece.move(0, 1);
-                this.scoreManager.addSoftDropScore(1);
-                this.updateUI();
                 this.cancelLock();
                 this.lastDropTime = performance.now();
             }
@@ -717,8 +1310,6 @@
             if (this.state !== GAME_STATE.PLAYING || !this.currentPiece) return;
             const dist = this.board.getDropDistance(this.currentPiece);
             this.currentPiece.move(0, dist);
-            this.scoreManager.addHardDropScore(dist);
-            this.updateUI();
             this.lockPiece();
         }
 
@@ -745,17 +1336,64 @@
         hold() {
             if (this.state !== GAME_STATE.PLAYING || !this.currentPiece || !this.canHold) return;
             const cur = this.currentPiece;
-            if (this.holdPiece) {
-                this.currentPiece = this.holdPiece;
-                this.currentPiece.setRotation(0);
-                this.currentPiece.setPosition(this.board.getSpawnX(this.currentPiece), this.board.getSpawnY());
-            } else {
-                this.spawnPiece();
-            }
+            // 新設計：不交換，直接清除並存入新方塊
             this.holdPiece = new Piece(cur.type);
+            this.spawnPiece();
             this.canHold = false;
             this.isLocking = false;
             this.lockResetCount = 0;
+        }
+
+        useItem(slotIndex) {
+            if (this.state !== GAME_STATE.PLAYING) return;
+            const item = this.itemManager.useItem(slotIndex);
+            if (!item) return;
+
+            switch (item) {
+                case 'bomb':
+                    this.useBomb();
+                    break;
+                case 'lineClear':
+                    this.useLineClear();
+                    break;
+                case 'freeze':
+                    this.useFreeze();
+                    break;
+                case 'transform':
+                    this.useTransform();
+                    break;
+            }
+            this.renderer.updateItems(this.itemManager.getSlots());
+            this.renderer.showEffect('item', GOOD_ITEMS[item].name);
+        }
+
+        useBomb() {
+            if (!this.currentPiece) return;
+            const centerX = this.currentPiece.x + 1;
+            const centerY = this.currentPiece.y + 1;
+            this.board.clearArea(centerX - 1, centerY - 1, 3, 3);
+        }
+
+        useLineClear() {
+            this.board.clearBottomLine();
+            this.checkAndProcessLines(1);
+        }
+
+        useFreeze() {
+            this.isFrozen = true;
+            this.freezeEndTime = performance.now() + 5000;
+        }
+
+        useTransform() {
+            if (!this.currentPiece) return;
+            const x = this.currentPiece.x;
+            const y = this.currentPiece.y;
+            this.currentPiece = new Piece('I');
+            this.currentPiece.setPosition(x, y);
+            // 確保新方塊不會碰撞
+            if (this.board.collides(this.currentPiece, 0, 0)) {
+                this.currentPiece.setPosition(this.board.getSpawnX(this.currentPiece), this.board.getSpawnY());
+            }
         }
 
         startLock() {
@@ -778,10 +1416,21 @@
         lockPiece() {
             if (!this.currentPiece) return;
             this.board.lockPiece(this.currentPiece);
+
+            // 處理道具方塊
+            if (this.currentPieceHasItem && this.currentItemType) {
+                if (this.currentItemType.type === 'good') {
+                    const added = this.itemManager.addItem(this.currentItemType.item);
+                    if (added) {
+                        this.renderer.showEffect('item', '獲得 ' + GOOD_ITEMS[this.currentItemType.item].name);
+                    }
+                    this.renderer.updateItems(this.itemManager.getSlots());
+                }
+            }
+
             const cleared = this.board.clearLines();
-            const r = this.scoreManager.addLineScore(cleared.length);
-            if (r.levelUp) this.dropInterval = this.scoreManager.getDropInterval();
-            this.updateUI();
+            this.checkAndProcessLines(cleared.length);
+
             if (this.board.isGameOver()) { this.gameOver(); return; }
             this.currentPiece = null;
             this.isLocking = false;
@@ -790,11 +1439,53 @@
             this.lastDropTime = performance.now();
         }
 
+        checkAndProcessLines(count) {
+            const stage = this.stageManager.getStage();
+            const result = this.scoreManager.addLineScore(count, stage);
+
+            if (result.clearType) {
+                this.renderer.showEffect('clear', result.clearType);
+            }
+            if (result.combo > 1) {
+                this.renderer.showEffect('combo', result.combo);
+            }
+
+            // 更新關卡進度
+            if (count > 0) {
+                const stageResult = this.stageManager.addLines(count);
+                if (stageResult.stageCleared) {
+                    if (stageResult.gameComplete) {
+                        this.gameComplete();
+                        return;
+                    }
+                    this.onStageClear(stageResult.newStage);
+                }
+            }
+
+            this.updateUI();
+        }
+
+        onStageClear(newStage) {
+            this.dropInterval = this.stageManager.getDropInterval();
+            // 重新初始化障礙物
+            if (this.stageManager.hasObstacles()) {
+                this.board.clearObstacles();
+                this.initObstacles();
+            }
+            this.renderer.showEffect('stage', '關卡 ' + newStage);
+        }
+
         updateUI() {
             this.renderer.updateScore(this.scoreManager.getScore());
-            this.renderer.updateLevel(this.scoreManager.getLevel());
             this.renderer.updateLines(this.scoreManager.getLines());
             this.renderer.updateCombo(this.scoreManager.getCombo());
+            this.renderer.updateStage(this.stageManager.getStage(), this.stageManager.getStageConfig());
+            this.renderer.updateProgress(this.stageManager.getStageLines(), this.stageManager.getTargetLines());
+            this.renderer.updateItems(this.itemManager.getSlots());
+
+            if (!this.stageManager.hasTimeLimit()) {
+                this.renderer.updateTimeLimit(0, false);
+            }
         }
 
         togglePause() {
@@ -807,12 +1498,14 @@
                 this.renderer.hideOverlay();
                 this.lastTime = performance.now();
                 this.lastDropTime = this.lastTime;
+                this.pieceSpawnTime = this.lastTime;
                 this.gameLoop(this.lastTime);
             }
         }
 
         restart() {
             this.inputHandler.stopAllRepeats();
+            this.itemManager.clearAllDebuffs();
             if (this.animationId) { cancelAnimationFrame(this.animationId); this.animationId = null; }
             this.state = GAME_STATE.IDLE;
             this.start();
@@ -821,13 +1514,29 @@
         gameOver() {
             this.state = GAME_STATE.GAME_OVER;
             this.inputHandler.stopAllRepeats();
+            this.itemManager.clearAllDebuffs();
+            this.itemManager.reset();
             if (this.animationId) { cancelAnimationFrame(this.animationId); this.animationId = null; }
             const score = this.scoreManager.getScore();
+            const stage = this.stageManager.getStage();
             const r = this.scoreManager.addHighScore(score);
-            let msg = `分數：${score.toLocaleString()}`;
+            let msg = `關卡：${stage}\n分數：${score.toLocaleString()}`;
             if (r.added && r.rank <= 3) msg += `\n新紀錄！第 ${r.rank} 名！`;
             msg += '\n按 Enter 重新開始';
             this.renderer.showOverlay('GAME OVER', msg, r.scores);
+        }
+
+        gameComplete() {
+            this.state = GAME_STATE.GAME_OVER;
+            this.inputHandler.stopAllRepeats();
+            this.itemManager.clearAllDebuffs();
+            if (this.animationId) { cancelAnimationFrame(this.animationId); this.animationId = null; }
+            const score = this.scoreManager.getScore();
+            const r = this.scoreManager.addHighScore(score);
+            let msg = `恭喜通關所有關卡！\n最終分數：${score.toLocaleString()}`;
+            if (r.added && r.rank <= 3) msg += `\n新紀錄！第 ${r.rank} 名！`;
+            msg += '\n按 Enter 重新開始';
+            this.renderer.showOverlay('恭喜通關！', msg, r.scores);
         }
     }
 
