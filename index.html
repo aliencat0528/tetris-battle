@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tetris - 俄羅斯方塊</title>
+    <link rel="stylesheet" href="styles/game.css">
+</head>
+<body>
+    <div id="game-container">
+        <header>
+            <h1>TETRIS</h1>
+        </header>
+
+        <main id="game-area">
+            <!-- Hold 區塊 -->
+            <aside id="hold-section">
+                <h3>HOLD</h3>
+                <canvas id="hold-canvas" width="100" height="100"></canvas>
+                <p class="hint">按 C 暫存</p>
+            </aside>
+
+            <!-- 主遊戲區域 -->
+            <section id="board-section">
+                <canvas id="game-canvas"></canvas>
+                <div id="overlay" class="hidden">
+                    <div id="overlay-content">
+                        <h2 id="overlay-title">TETRIS</h2>
+                        <p id="overlay-message">按 Enter 開始遊戲</p>
+                        <div id="high-scores" class="hidden">
+                            <h3>排行榜</h3>
+                            <ol id="score-list"></ol>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 資訊區塊 -->
+            <aside id="info-section">
+                <div id="next-section">
+                    <h3>NEXT</h3>
+                    <canvas id="next-canvas-1" width="100" height="100"></canvas>
+                    <canvas id="next-canvas-2" width="100" height="100"></canvas>
+                    <canvas id="next-canvas-3" width="100" height="100"></canvas>
+                </div>
+
+                <div id="stats-section">
+                    <div class="stat-item">
+                        <span class="stat-label">分數</span>
+                        <span id="score" class="stat-value">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">等級</span>
+                        <span id="level" class="stat-value">1</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">消除行數</span>
+                        <span id="lines" class="stat-value">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">連擊</span>
+                        <span id="combo" class="stat-value">0</span>
+                    </div>
+                </div>
+            </aside>
+        </main>
+
+        <footer id="controls-hint">
+            <p>← → 移動 | ↑ 旋轉 | ↓ 快降 | 空白鍵 瞬降 | C 暫存 | P 暫停 | R 重新開始</p>
+        </footer>
+    </div>
+
+    <script type="module" src="src/main.js"></script>
+</body>
+</html>
