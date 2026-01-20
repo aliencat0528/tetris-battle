@@ -70,3 +70,7 @@ temp/
 
 # Port allocation (local configuration)
 PORT_ALLOCATION.md
+
+# Dev Container - 本地覆蓋配置
+.devcontainer/*.local.*
+.devcontainer/.env.local

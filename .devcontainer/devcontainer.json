@@ -1,0 +1,22 @@
+{
+    "name": "Tetris Game",
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+    "features": {
+        "ghcr.io/devcontainers/features/python:1": {
+            "version": "3.11"
+        }
+    },
+    "forwardPorts": [8100],
+    "postCreateCommand": "echo 'Dev container ready! Run: python3 -m http.server 8100'",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ritwickdey.LiveServer",
+                "ms-vscode.live-server"
+            ],
+            "settings": {
+                "liveServer.settings.port": 8100
+            }
+        }
+    }
+}

@@ -23,7 +23,7 @@
             <!-- 主遊戲區域 -->
             <section id="board-section">
                 <canvas id="game-canvas"></canvas>
-                <div id="overlay" class="hidden">
+                <div id="overlay">
                     <div id="overlay-content">
                         <h2 id="overlay-title">TETRIS</h2>
                         <p id="overlay-message">按 Enter 開始遊戲</p>
@@ -70,6 +70,772 @@
         </footer>
     </div>
 
-    <script type="module" src="src/main.js"></script>
+    <script>
+    // ============== Constants ==============
+    const COLS = 10;
+    const ROWS = 20;
+    const BLOCK_SIZE = 30;
+    const PREVIEW_BLOCK_SIZE = 20;
+
+    const INITIAL_DROP_INTERVAL = 1000;
+    const MIN_DROP_INTERVAL = 50;
+    const LOCK_DELAY = 500;
+    const LOCK_DELAY_RESET_LIMIT = 15;
+
+    const LINES_PER_LEVEL = 10;
+    const MAX_LEVEL = 15;
+    const SPEED_DECREASE_PER_LEVEL = 50;
+
+    const SCORE_TABLE = { 1: 100, 2: 300, 3: 500, 4: 800 };
+    const SOFT_DROP_SCORE = 1;
+    const HARD_DROP_SCORE = 2;
+    const COMBO_BONUS = 50;
+
+    const COLORS = {
+        I: '#00d4ff', O: '#ffd700', T: '#9b59b6', S: '#2ecc71',
+        Z: '#e74c3c', J: '#3498db', L: '#e67e22',
+        ghost: 'rgba(255, 255, 255, 0.2)'
+    };
+
+    const SHAPES = {
+        I: [
+            [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]],
+            [[0,0,1,0],[0,0,1,0],[0,0,1,0],[0,0,1,0]],
+            [[0,0,0,0],[0,0,0,0],[1,1,1,1],[0,0,0,0]],
+            [[0,1,0,0],[0,1,0,0],[0,1,0,0],[0,1,0,0]]
+        ],
+        O: [
+            [[1,1],[1,1]], [[1,1],[1,1]], [[1,1],[1,1]], [[1,1],[1,1]]
+        ],
+        T: [
+            [[0,1,0],[1,1,1],[0,0,0]], [[0,1,0],[0,1,1],[0,1,0]],
+            [[0,0,0],[1,1,1],[0,1,0]], [[0,1,0],[1,1,0],[0,1,0]]
+        ],
+        S: [
+            [[0,1,1],[1,1,0],[0,0,0]], [[0,1,0],[0,1,1],[0,0,1]],
+            [[0,0,0],[0,1,1],[1,1,0]], [[1,0,0],[1,1,0],[0,1,0]]
+        ],
+        Z: [
+            [[1,1,0],[0,1,1],[0,0,0]], [[0,0,1],[0,1,1],[0,1,0]],
+            [[0,0,0],[1,1,0],[0,1,1]], [[0,1,0],[1,1,0],[1,0,0]]
+        ],
+        J: [
+            [[1,0,0],[1,1,1],[0,0,0]], [[0,1,1],[0,1,0],[0,1,0]],
+            [[0,0,0],[1,1,1],[0,0,1]], [[0,1,0],[0,1,0],[1,1,0]]
+        ],
+        L: [
+            [[0,0,1],[1,1,1],[0,0,0]], [[0,1,0],[0,1,0],[0,1,1]],
+            [[0,0,0],[1,1,1],[1,0,0]], [[1,1,0],[0,1,0],[0,1,0]]
+        ]
+    };
+
+    const PIECE_TYPES = ['I', 'O', 'T', 'S', 'Z', 'J', 'L'];
+
+    const WALL_KICKS = {
+        normal: {
+            '0>1': [[0,0],[-1,0],[-1,1],[0,-2],[-1,-2]],
+            '1>2': [[0,0],[1,0],[1,-1],[0,2],[1,2]],
+            '2>3': [[0,0],[1,0],[1,1],[0,-2],[1,-2]],
+            '3>0': [[0,0],[-1,0],[-1,-1],[0,2],[-1,2]],
+            '0>3': [[0,0],[1,0],[1,1],[0,-2],[1,-2]],
+            '3>2': [[0,0],[-1,0],[-1,-1],[0,2],[-1,2]],
+            '2>1': [[0,0],[-1,0],[-1,1],[0,-2],[-1,-2]],
+            '1>0': [[0,0],[1,0],[1,-1],[0,2],[1,2]]
+        },
+        I: {
+            '0>1': [[0,0],[-2,0],[1,0],[-2,-1],[1,2]],
+            '1>2': [[0,0],[-1,0],[2,0],[-1,2],[2,-1]],
+            '2>3': [[0,0],[2,0],[-1,0],[2,1],[-1,-2]],
+            '3>0': [[0,0],[1,0],[-2,0],[1,-2],[-2,1]],
+            '0>3': [[0,0],[-1,0],[2,0],[-1,2],[2,-1]],
+            '3>2': [[0,0],[-2,0],[1,0],[-2,-1],[1,2]],
+            '2>1': [[0,0],[1,0],[-2,0],[1,-2],[-2,1]],
+            '1>0': [[0,0],[2,0],[-1,0],[2,1],[-1,-2]]
+        }
+    };
+
+    const GAME_STATE = { IDLE: 'idle', PLAYING: 'playing', PAUSED: 'paused', GAME_OVER: 'game_over' };
+
+    const KEY_BINDINGS = {
+        LEFT: ['ArrowLeft', 'KeyA'],
+        RIGHT: ['ArrowRight', 'KeyD'],
+        SOFT_DROP: ['ArrowDown', 'KeyS'],
+        HARD_DROP: ['Space'],
+        ROTATE_CW: ['ArrowUp', 'KeyW', 'KeyX'],
+        ROTATE_CCW: ['KeyZ'],
+        HOLD: ['KeyC', 'ShiftLeft', 'ShiftRight'],
+        PAUSE: ['KeyP', 'Escape'],
+        RESTART: ['KeyR']
+    };
+
+    // ============== Piece Class ==============
+    class Piece {
+        constructor(type = null) {
+            this.type = type || PIECE_TYPES[Math.floor(Math.random() * PIECE_TYPES.length)];
+            this.rotationIndex = 0;
+            this.x = 0;
+            this.y = 0;
+            this.color = COLORS[this.type];
+        }
+
+        getShape() { return SHAPES[this.type][this.rotationIndex]; }
+        getShapeAt(idx) { return SHAPES[this.type][((idx % 4) + 4) % 4]; }
+        getWidth() { return this.getShape()[0].length; }
+        getHeight() { return this.getShape().length; }
+        setRotation(idx) { this.rotationIndex = ((idx % 4) + 4) % 4; }
+        move(dx, dy) { this.x += dx; this.y += dy; }
+        setPosition(x, y) { this.x = x; this.y = y; }
+
+        getWallKicks(from, to) {
+            const key = `${((from % 4) + 4) % 4}>${((to % 4) + 4) % 4}`;
+            return (this.type === 'I' ? WALL_KICKS.I[key] : WALL_KICKS.normal[key]) || [[0, 0]];
+        }
+
+        forEachBlock(callback) {
+            const shape = this.getShape();
+            for (let row = 0; row < shape.length; row++) {
+                for (let col = 0; col < shape[row].length; col++) {
+                    if (shape[row][col]) callback(col, row, this.x + col, this.y + row);
+                }
+            }
+        }
+    }
+
+    // ============== PieceBag Class ==============
+    class PieceBag {
+        constructor() { this.bag = []; this.fillBag(); }
+        fillBag() {
+            this.bag = [...PIECE_TYPES];
+            for (let i = this.bag.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [this.bag[i], this.bag[j]] = [this.bag[j], this.bag[i]];
+            }
+        }
+        next() {
+            if (this.bag.length === 0) this.fillBag();
+            return this.bag.pop();
+        }
+    }
+
+    // ============== Board Class ==============
+    class Board {
+        constructor() {
+            this.cols = COLS;
+            this.rows = ROWS;
+            this.grid = this.createEmptyGrid();
+        }
+
+        createEmptyGrid() {
+            return Array.from({ length: this.rows }, () => Array(this.cols).fill(null));
+        }
+
+        reset() { this.grid = this.createEmptyGrid(); }
+
+        isEmpty(x, y) {
+            if (x < 0 || x >= this.cols) return false;
+            if (y >= this.rows) return false;
+            if (y < 0) return true;
+            return this.grid[y][x] === null;
+        }
+
+        collides(piece, offsetX = 0, offsetY = 0, shape = null) {
+            const matrix = shape || piece.getShape();
+            const testX = piece.x + offsetX;
+            const testY = piece.y + offsetY;
+            for (let row = 0; row < matrix.length; row++) {
+                for (let col = 0; col < matrix[row].length; col++) {
+                    if (matrix[row][col] && !this.isEmpty(testX + col, testY + row)) return true;
+                }
+            }
+            return false;
+        }
+
+        lockPiece(piece) {
+            piece.forEachBlock((lx, ly, gx, gy) => {
+                if (gy >= 0 && gy < this.rows) this.grid[gy][gx] = piece.color;
+            });
+        }
+
+        clearLines() {
+            const cleared = [];
+            for (let row = this.rows - 1; row >= 0; row--) {
+                if (this.grid[row].every(cell => cell !== null)) cleared.push(row);
+            }
+            cleared.forEach((line, i) => {
+                this.grid.splice(line + i, 1);
+                this.grid.unshift(Array(this.cols).fill(null));
+            });
+            return cleared;
+        }
+
+        isGameOver() {
+            return this.grid[0].some(cell => cell !== null) || this.grid[1].some(cell => cell !== null);
+        }
+
+        getGhostY(piece) {
+            let ghostY = piece.y;
+            while (!this.collides(piece, 0, ghostY - piece.y + 1)) ghostY++;
+            return ghostY;
+        }
+
+        getDropDistance(piece) { return this.getGhostY(piece) - piece.y; }
+
+        tryRotate(piece, clockwise = true) {
+            const from = piece.rotationIndex;
+            const to = clockwise ? (from + 1) % 4 : (from + 3) % 4;
+            const kicks = piece.getWallKicks(from, to);
+            const newShape = piece.getShapeAt(to);
+            for (const [kx, ky] of kicks) {
+                if (!this.collides(piece, kx, -ky, newShape)) {
+                    return { success: true, newRotation: to, kickX: kx, kickY: -ky };
+                }
+            }
+            return { success: false, newRotation: from, kickX: 0, kickY: 0 };
+        }
+
+        getSpawnX(piece) { return Math.floor((this.cols - piece.getWidth()) / 2); }
+        getSpawnY() { return 0; }
+
+        forEachCell(callback) {
+            for (let row = 0; row < this.rows; row++) {
+                for (let col = 0; col < this.cols; col++) {
+                    if (this.grid[row][col]) callback(col, row, this.grid[row][col]);
+                }
+            }
+        }
+    }
+
+    // ============== Renderer Class ==============
+    class Renderer {
+        constructor() {
+            this.gameCanvas = document.getElementById('game-canvas');
+            this.gameCtx = this.gameCanvas.getContext('2d');
+            this.holdCanvas = document.getElementById('hold-canvas');
+            this.holdCtx = this.holdCanvas.getContext('2d');
+            this.nextCanvases = [
+                document.getElementById('next-canvas-1'),
+                document.getElementById('next-canvas-2'),
+                document.getElementById('next-canvas-3')
+            ];
+            this.nextCtxs = this.nextCanvases.map(c => c.getContext('2d'));
+
+            this.scoreEl = document.getElementById('score');
+            this.levelEl = document.getElementById('level');
+            this.linesEl = document.getElementById('lines');
+            this.comboEl = document.getElementById('combo');
+            this.overlay = document.getElementById('overlay');
+            this.overlayTitle = document.getElementById('overlay-title');
+            this.overlayMsg = document.getElementById('overlay-message');
+            this.highScoresDiv = document.getElementById('high-scores');
+            this.scoreList = document.getElementById('score-list');
+
+            this.gameCanvas.width = COLS * BLOCK_SIZE;
+            this.gameCanvas.height = ROWS * BLOCK_SIZE;
+            this.holdCanvas.width = this.holdCanvas.height = 4 * PREVIEW_BLOCK_SIZE + 10;
+            this.nextCanvases.forEach(c => { c.width = c.height = 4 * PREVIEW_BLOCK_SIZE + 10; });
+        }
+
+        clearGameCanvas() {
+            this.gameCtx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+            this.gameCtx.fillRect(0, 0, this.gameCanvas.width, this.gameCanvas.height);
+        }
+
+        drawGrid() {
+            this.gameCtx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+            this.gameCtx.lineWidth = 1;
+            for (let x = 0; x <= COLS; x++) {
+                this.gameCtx.beginPath();
+                this.gameCtx.moveTo(x * BLOCK_SIZE, 0);
+                this.gameCtx.lineTo(x * BLOCK_SIZE, ROWS * BLOCK_SIZE);
+                this.gameCtx.stroke();
+            }
+            for (let y = 0; y <= ROWS; y++) {
+                this.gameCtx.beginPath();
+                this.gameCtx.moveTo(0, y * BLOCK_SIZE);
+                this.gameCtx.lineTo(COLS * BLOCK_SIZE, y * BLOCK_SIZE);
+                this.gameCtx.stroke();
+            }
+        }
+
+        drawBlock(ctx, x, y, color, size = BLOCK_SIZE, isGhost = false) {
+            const p = 1, inner = size - p * 2;
+            if (isGhost) {
+                ctx.strokeStyle = COLORS.ghost;
+                ctx.lineWidth = 2;
+                ctx.strokeRect(x * size + p, y * size + p, inner, inner);
+            } else {
+                ctx.fillStyle = color;
+                ctx.fillRect(x * size + p, y * size + p, inner, inner);
+                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                ctx.fillRect(x * size + p, y * size + p, inner, 3);
+                ctx.fillRect(x * size + p, y * size + p, 3, inner);
+                ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                ctx.fillRect(x * size + p, y * size + size - p - 3, inner, 3);
+                ctx.fillRect(x * size + size - p - 3, y * size + p, 3, inner);
+            }
+        }
+
+        drawBoard(board) {
+            board.forEachCell((x, y, color) => this.drawBlock(this.gameCtx, x, y, color));
+        }
+
+        drawPiece(piece) {
+            if (!piece) return;
+            piece.forEachBlock((lx, ly, gx, gy) => {
+                if (gy >= 0) this.drawBlock(this.gameCtx, gx, gy, piece.color);
+            });
+        }
+
+        drawGhost(piece, ghostY) {
+            if (!piece || ghostY <= piece.y) return;
+            const shape = piece.getShape();
+            for (let row = 0; row < shape.length; row++) {
+                for (let col = 0; col < shape[row].length; col++) {
+                    if (shape[row][col] && ghostY + row >= 0) {
+                        this.drawBlock(this.gameCtx, piece.x + col, ghostY + row, piece.color, BLOCK_SIZE, true);
+                    }
+                }
+            }
+        }
+
+        drawPreviewPiece(ctx, piece) {
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            if (!piece) return;
+            const shape = piece.getShape();
+            const pw = shape[0].length, ph = shape.length;
+            const offX = (ctx.canvas.width - pw * PREVIEW_BLOCK_SIZE) / 2;
+            const offY = (ctx.canvas.height - ph * PREVIEW_BLOCK_SIZE) / 2;
+            for (let r = 0; r < shape.length; r++) {
+                for (let c = 0; c < shape[r].length; c++) {
+                    if (shape[r][c]) {
+                        const x = offX + c * PREVIEW_BLOCK_SIZE, y = offY + r * PREVIEW_BLOCK_SIZE;
+                        ctx.fillStyle = piece.color;
+                        ctx.fillRect(x + 1, y + 1, PREVIEW_BLOCK_SIZE - 2, PREVIEW_BLOCK_SIZE - 2);
+                        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                        ctx.fillRect(x + 1, y + 1, PREVIEW_BLOCK_SIZE - 2, 2);
+                    }
+                }
+            }
+        }
+
+        drawHold(piece, canUse = true) {
+            if (!canUse) this.holdCtx.globalAlpha = 0.4;
+            this.drawPreviewPiece(this.holdCtx, piece);
+            this.holdCtx.globalAlpha = 1;
+        }
+
+        drawNextPieces(pieces) {
+            pieces.forEach((p, i) => { if (i < this.nextCtxs.length) this.drawPreviewPiece(this.nextCtxs[i], p); });
+        }
+
+        updateScore(s) { this.scoreEl.textContent = s.toLocaleString(); }
+        updateLevel(l) { this.levelEl.textContent = l; }
+        updateLines(l) { this.linesEl.textContent = l; }
+        updateCombo(c) {
+            this.comboEl.textContent = c;
+            this.comboEl.style.color = c > 0 ? '#ffd700' : '#00d4ff';
+        }
+
+        showOverlay(title, msg, scores = null) {
+            this.overlayTitle.textContent = title;
+            this.overlayMsg.textContent = msg;
+            if (scores && scores.length > 0) {
+                this.highScoresDiv.classList.remove('hidden');
+                this.scoreList.innerHTML = scores.slice(0, 5).map(s => `<li>${s.toLocaleString()}</li>`).join('');
+            } else {
+                this.highScoresDiv.classList.add('hidden');
+            }
+            this.overlay.classList.remove('hidden');
+        }
+
+        hideOverlay() { this.overlay.classList.add('hidden'); }
+
+        render(board, piece, ghostY, holdPiece, canHold, nextPieces) {
+            this.clearGameCanvas();
+            this.drawGrid();
+            this.drawBoard(board);
+            this.drawGhost(piece, ghostY);
+            this.drawPiece(piece);
+            this.drawHold(holdPiece, canHold);
+            this.drawNextPieces(nextPieces);
+        }
+    }
+
+    // ============== ScoreManager Class ==============
+    class ScoreManager {
+        constructor() { this.reset(); this.storageKey = 'tetris_high_scores'; }
+        reset() { this.score = 0; this.level = 1; this.lines = 0; this.combo = 0; }
+
+        addLineScore(n) {
+            if (n === 0) { this.combo = 0; return { score: 0, levelUp: false }; }
+            let s = (SCORE_TABLE[n] || 0) * this.level;
+            if (this.combo > 0) s += COMBO_BONUS * this.combo * this.level;
+            this.combo++;
+            this.score += s;
+            this.lines += n;
+            const newLvl = Math.min(Math.floor(this.lines / LINES_PER_LEVEL) + 1, MAX_LEVEL);
+            const up = newLvl > this.level;
+            this.level = newLvl;
+            return { score: s, levelUp: up };
+        }
+
+        addSoftDropScore(n = 1) { this.score += SOFT_DROP_SCORE * n; }
+        addHardDropScore(n) { this.score += HARD_DROP_SCORE * n; }
+        getDropInterval() { return Math.max(INITIAL_DROP_INTERVAL - (this.level - 1) * SPEED_DECREASE_PER_LEVEL, MIN_DROP_INTERVAL); }
+        getScore() { return this.score; }
+        getLevel() { return this.level; }
+        getLines() { return this.lines; }
+        getCombo() { return this.combo; }
+
+        loadHighScores() {
+            try { return JSON.parse(localStorage.getItem(this.storageKey)) || []; }
+            catch { return []; }
+        }
+
+        addHighScore(score) {
+            const scores = this.loadHighScores();
+            let rank = scores.findIndex(s => score > s);
+            if (rank === -1) rank = scores.length;
+            scores.splice(rank, 0, score);
+            const trimmed = scores.slice(0, 10);
+            try { localStorage.setItem(this.storageKey, JSON.stringify(trimmed)); } catch {}
+            return { added: rank < 10, rank: rank + 1, scores: trimmed };
+        }
+
+        getHighScores() { return this.loadHighScores(); }
+    }
+
+    // ============== InputHandler Class ==============
+    class InputHandler {
+        constructor(cb) {
+            this.cb = cb;
+            this.keys = {};
+            this.repeatTimers = {};
+            document.addEventListener('keydown', e => this.onKeyDown(e));
+            document.addEventListener('keyup', e => this.onKeyUp(e));
+        }
+
+        onKeyDown(e) {
+            const k = e.code;
+            if (this.keys[k]) return;
+            this.keys[k] = true;
+            if (this.isGameKey(k)) e.preventDefault();
+
+            if (k === 'Enter') { this.cb.onStart(); return; }
+            if (KEY_BINDINGS.PAUSE.includes(k)) { this.cb.onPause(); return; }
+            if (KEY_BINDINGS.RESTART.includes(k)) { this.cb.onRestart(); return; }
+            if (KEY_BINDINGS.LEFT.includes(k)) { this.cb.onLeft(); this.startRepeat('left', () => this.cb.onLeft()); return; }
+            if (KEY_BINDINGS.RIGHT.includes(k)) { this.cb.onRight(); this.startRepeat('right', () => this.cb.onRight()); return; }
+            if (KEY_BINDINGS.SOFT_DROP.includes(k)) { this.cb.onSoftDrop(); this.startRepeat('soft', () => this.cb.onSoftDrop()); return; }
+            if (KEY_BINDINGS.HARD_DROP.includes(k)) { this.cb.onHardDrop(); return; }
+            if (KEY_BINDINGS.ROTATE_CW.includes(k)) { this.cb.onRotateCW(); return; }
+            if (KEY_BINDINGS.ROTATE_CCW.includes(k)) { this.cb.onRotateCCW(); return; }
+            if (KEY_BINDINGS.HOLD.includes(k)) { this.cb.onHold(); return; }
+        }
+
+        onKeyUp(e) {
+            const k = e.code;
+            this.keys[k] = false;
+            if (KEY_BINDINGS.LEFT.includes(k)) this.stopRepeat('left');
+            if (KEY_BINDINGS.RIGHT.includes(k)) this.stopRepeat('right');
+            if (KEY_BINDINGS.SOFT_DROP.includes(k)) this.stopRepeat('soft');
+        }
+
+        isGameKey(k) {
+            return [...KEY_BINDINGS.LEFT, ...KEY_BINDINGS.RIGHT, ...KEY_BINDINGS.SOFT_DROP,
+                ...KEY_BINDINGS.HARD_DROP, ...KEY_BINDINGS.ROTATE_CW, ...KEY_BINDINGS.ROTATE_CCW,
+                ...KEY_BINDINGS.HOLD, ...KEY_BINDINGS.PAUSE, ...KEY_BINDINGS.RESTART].includes(k);
+        }
+
+        startRepeat(action, fn) {
+            this.stopRepeat(action);
+            this.repeatTimers[action] = { delay: setTimeout(() => {
+                this.repeatTimers[action].interval = setInterval(fn, 50);
+            }, 170) };
+        }
+
+        stopRepeat(action) {
+            if (this.repeatTimers[action]) {
+                clearTimeout(this.repeatTimers[action].delay);
+                clearInterval(this.repeatTimers[action].interval);
+                delete this.repeatTimers[action];
+            }
+        }
+
+        stopAllRepeats() { Object.keys(this.repeatTimers).forEach(a => this.stopRepeat(a)); }
+    }
+
+    // ============== Game Class ==============
+    class Game {
+        constructor() {
+            this.board = new Board();
+            this.renderer = new Renderer();
+            this.scoreManager = new ScoreManager();
+            this.pieceBag = new PieceBag();
+
+            this.state = GAME_STATE.IDLE;
+            this.currentPiece = null;
+            this.holdPiece = null;
+            this.canHold = true;
+            this.nextPieces = [];
+
+            this.lastDropTime = 0;
+            this.dropInterval = this.scoreManager.getDropInterval();
+            this.isLocking = false;
+            this.lockStartTime = 0;
+            this.lockResetCount = 0;
+            this.animationId = null;
+            this.lastTime = 0;
+
+            this.inputHandler = new InputHandler({
+                onLeft: () => this.moveLeft(),
+                onRight: () => this.moveRight(),
+                onSoftDrop: () => this.softDrop(),
+                onHardDrop: () => this.hardDrop(),
+                onRotateCW: () => this.rotateCW(),
+                onRotateCCW: () => this.rotateCCW(),
+                onHold: () => this.hold(),
+                onPause: () => this.togglePause(),
+                onRestart: () => this.restart(),
+                onStart: () => this.start()
+            });
+
+            this.initDisplay();
+        }
+
+        initDisplay() {
+            const hs = this.scoreManager.getHighScores();
+            this.renderer.showOverlay('TETRIS', '按 Enter 開始遊戲', hs);
+            this.renderer.updateScore(0);
+            this.renderer.updateLevel(1);
+            this.renderer.updateLines(0);
+            this.renderer.updateCombo(0);
+            this.renderer.clearGameCanvas();
+            this.renderer.drawGrid();
+        }
+
+        start() {
+            if (this.state === GAME_STATE.PLAYING) return;
+            this.board.reset();
+            this.scoreManager.reset();
+            this.pieceBag = new PieceBag();
+            this.holdPiece = null;
+            this.canHold = true;
+            this.isLocking = false;
+            this.lockResetCount = 0;
+            this.dropInterval = this.scoreManager.getDropInterval();
+
+            this.nextPieces = [];
+            for (let i = 0; i < 3; i++) this.nextPieces.push(new Piece(this.pieceBag.next()));
+            this.spawnPiece();
+            this.updateUI();
+            this.renderer.hideOverlay();
+
+            this.state = GAME_STATE.PLAYING;
+            this.lastTime = performance.now();
+            this.lastDropTime = this.lastTime;
+            this.gameLoop(this.lastTime);
+        }
+
+        gameLoop(time) {
+            if (this.state !== GAME_STATE.PLAYING) { this.animationId = null; return; }
+            this.lastTime = time;
+            this.update(time);
+            this.render();
+            this.animationId = requestAnimationFrame(t => this.gameLoop(t));
+        }
+
+        update(time) {
+            if (!this.currentPiece) return;
+            if (this.isLocking) {
+                if (time - this.lockStartTime >= LOCK_DELAY) this.lockPiece();
+                return;
+            }
+            if (time - this.lastDropTime >= this.dropInterval) {
+                this.drop();
+                this.lastDropTime = time;
+            }
+        }
+
+        render() {
+            const ghostY = this.currentPiece ? this.board.getGhostY(this.currentPiece) : 0;
+            this.renderer.render(this.board, this.currentPiece, ghostY, this.holdPiece, this.canHold, this.nextPieces);
+        }
+
+        spawnPiece() {
+            this.currentPiece = this.nextPieces.shift();
+            this.nextPieces.push(new Piece(this.pieceBag.next()));
+            const sx = this.board.getSpawnX(this.currentPiece);
+            const sy = this.board.getSpawnY();
+            this.currentPiece.setPosition(sx, sy);
+            if (this.board.collides(this.currentPiece, 0, 0)) { this.gameOver(); return; }
+            this.canHold = true;
+            this.isLocking = false;
+            this.lockResetCount = 0;
+        }
+
+        drop() {
+            if (!this.currentPiece) return;
+            if (!this.board.collides(this.currentPiece, 0, 1)) {
+                this.currentPiece.move(0, 1);
+                this.cancelLock();
+            } else {
+                this.startLock();
+            }
+        }
+
+        moveLeft() {
+            if (this.state !== GAME_STATE.PLAYING || !this.currentPiece) return;
+            if (!this.board.collides(this.currentPiece, -1, 0)) {
+                this.currentPiece.move(-1, 0);
+                this.resetLock();
+            }
+        }
+
+        moveRight() {
+            if (this.state !== GAME_STATE.PLAYING || !this.currentPiece) return;
+            if (!this.board.collides(this.currentPiece, 1, 0)) {
+                this.currentPiece.move(1, 0);
+                this.resetLock();
+            }
+        }
+
+        softDrop() {
+            if (this.state !== GAME_STATE.PLAYING || !this.currentPiece) return;
+            if (!this.board.collides(this.currentPiece, 0, 1)) {
+                this.currentPiece.move(0, 1);
+                this.scoreManager.addSoftDropScore(1);
+                this.updateUI();
+                this.cancelLock();
+                this.lastDropTime = performance.now();
+            }
+        }
+
+        hardDrop() {
+            if (this.state !== GAME_STATE.PLAYING || !this.currentPiece) return;
+            const dist = this.board.getDropDistance(this.currentPiece);
+            this.currentPiece.move(0, dist);
+            this.scoreManager.addHardDropScore(dist);
+            this.updateUI();
+            this.lockPiece();
+        }
+
+        rotateCW() {
+            if (this.state !== GAME_STATE.PLAYING || !this.currentPiece) return;
+            const r = this.board.tryRotate(this.currentPiece, true);
+            if (r.success) {
+                this.currentPiece.setRotation(r.newRotation);
+                this.currentPiece.move(r.kickX, r.kickY);
+                this.resetLock();
+            }
+        }
+
+        rotateCCW() {
+            if (this.state !== GAME_STATE.PLAYING || !this.currentPiece) return;
+            const r = this.board.tryRotate(this.currentPiece, false);
+            if (r.success) {
+                this.currentPiece.setRotation(r.newRotation);
+                this.currentPiece.move(r.kickX, r.kickY);
+                this.resetLock();
+            }
+        }
+
+        hold() {
+            if (this.state !== GAME_STATE.PLAYING || !this.currentPiece || !this.canHold) return;
+            const cur = this.currentPiece;
+            if (this.holdPiece) {
+                this.currentPiece = this.holdPiece;
+                this.currentPiece.setRotation(0);
+                this.currentPiece.setPosition(this.board.getSpawnX(this.currentPiece), this.board.getSpawnY());
+            } else {
+                this.spawnPiece();
+            }
+            this.holdPiece = new Piece(cur.type);
+            this.canHold = false;
+            this.isLocking = false;
+            this.lockResetCount = 0;
+        }
+
+        startLock() {
+            if (!this.isLocking) { this.isLocking = true; this.lockStartTime = performance.now(); }
+        }
+
+        resetLock() {
+            if (this.isLocking && this.lockResetCount < LOCK_DELAY_RESET_LIMIT) {
+                if (this.board.collides(this.currentPiece, 0, 1)) {
+                    this.lockStartTime = performance.now();
+                    this.lockResetCount++;
+                } else {
+                    this.cancelLock();
+                }
+            }
+        }
+
+        cancelLock() { this.isLocking = false; this.lockResetCount = 0; }
+
+        lockPiece() {
+            if (!this.currentPiece) return;
+            this.board.lockPiece(this.currentPiece);
+            const cleared = this.board.clearLines();
+            const r = this.scoreManager.addLineScore(cleared.length);
+            if (r.levelUp) this.dropInterval = this.scoreManager.getDropInterval();
+            this.updateUI();
+            if (this.board.isGameOver()) { this.gameOver(); return; }
+            this.currentPiece = null;
+            this.isLocking = false;
+            this.lockResetCount = 0;
+            this.spawnPiece();
+            this.lastDropTime = performance.now();
+        }
+
+        updateUI() {
+            this.renderer.updateScore(this.scoreManager.getScore());
+            this.renderer.updateLevel(this.scoreManager.getLevel());
+            this.renderer.updateLines(this.scoreManager.getLines());
+            this.renderer.updateCombo(this.scoreManager.getCombo());
+        }
+
+        togglePause() {
+            if (this.state === GAME_STATE.PLAYING) {
+                this.state = GAME_STATE.PAUSED;
+                this.inputHandler.stopAllRepeats();
+                this.renderer.showOverlay('PAUSED', '按 P 繼續遊戲');
+            } else if (this.state === GAME_STATE.PAUSED) {
+                this.state = GAME_STATE.PLAYING;
+                this.renderer.hideOverlay();
+                this.lastTime = performance.now();
+                this.lastDropTime = this.lastTime;
+                this.gameLoop(this.lastTime);
+            }
+        }
+
+        restart() {
+            this.inputHandler.stopAllRepeats();
+            if (this.animationId) { cancelAnimationFrame(this.animationId); this.animationId = null; }
+            this.state = GAME_STATE.IDLE;
+            this.start();
+        }
+
+        gameOver() {
+            this.state = GAME_STATE.GAME_OVER;
+            this.inputHandler.stopAllRepeats();
+            if (this.animationId) { cancelAnimationFrame(this.animationId); this.animationId = null; }
+            const score = this.scoreManager.getScore();
+            const r = this.scoreManager.addHighScore(score);
+            let msg = `分數：${score.toLocaleString()}`;
+            if (r.added && r.rank <= 3) msg += `\n新紀錄！第 ${r.rank} 名！`;
+            msg += '\n按 Enter 重新開始';
+            this.renderer.showOverlay('GAME OVER', msg, r.scores);
+        }
+    }
+
+    // ============== Initialize ==============
+    document.addEventListener('DOMContentLoaded', () => {
+        window.tetrisGame = new Game();
+        console.log('Tetris ready! Press Enter to start.');
+    });
+    </script>
 </body>
 </html>
