@@ -39,7 +39,7 @@
                 <div id="hold-section">
                     <h3>HOLD</h3>
                     <canvas id="hold-canvas" width="100" height="100"></canvas>
-                    <p class="hint">按 C 暫存</p>
+                    <p class="hint">按 C 存入/取出</p>
                 </div>
 
                 <!-- 道具欄 -->
@@ -123,7 +123,7 @@
         </main>
 
         <footer id="controls-hint">
-            <p>← → 移動 | ↑ 旋轉 | ↓ 快降 | 空白鍵 瞬降 | C 暫存 | 1-3 道具 | P 暫停 | R 重新開始</p>
+            <p>← → 移動 | ↑ 旋轉 | ↓ 快降 | 空白鍵 瞬降 | C 存入/取出方塊 | 1-3 道具 | P 暫停 | R 重新開始</p>
         </footer>
     </div>
 
@@ -153,9 +153,9 @@
     const STAGES = {
         1: {
             name: '入門',
-            targetLines: 10,
+            targetLines: 2,
             dropInterval: 1000,
-            mission: '消除 10 行過關',
+            mission: '消除 2 行過關',
             features: ['有利道具開始出現'],
             hasGoodItems: true,
             hasBadItems: false,
@@ -166,9 +166,9 @@
         },
         2: {
             name: '練習',
-            targetLines: 15,
+            targetLines: 3,
             dropInterval: 900,
-            mission: '消除 15 行過關',
+            mission: '消除 3 行過關',
             features: ['道具出現機率提升'],
             hasGoodItems: true,
             hasBadItems: false,
@@ -179,9 +179,9 @@
         },
         3: {
             name: '障礙',
-            targetLines: 20,
+            targetLines: 4,
             dropInterval: 800,
-            mission: '消除 20 行過關',
+            mission: '消除 4 行過關',
             features: ['石頭障礙物出現', '障礙物無法消除'],
             hasGoodItems: true,
             hasBadItems: false,
@@ -192,9 +192,9 @@
         },
         4: {
             name: '限時',
-            targetLines: 25,
+            targetLines: 4,
             dropInterval: 700,
-            mission: '消除 25 行過關',
+            mission: '消除 4 行過關',
             features: ['每塊方塊有 8 秒放置時間', '超時方塊會消失'],
             hasGoodItems: true,
             hasBadItems: false,
@@ -206,9 +206,9 @@
         },
         5: {
             name: '危機',
-            targetLines: 30,
+            targetLines: 5,
             dropInterval: 600,
-            mission: '消除 30 行過關',
+            mission: '消除 5 行過關',
             features: ['出局道具開始出現', '小心負面效果'],
             hasGoodItems: true,
             hasBadItems: true,
@@ -221,9 +221,9 @@
         },
         6: {
             name: '終極挑戰',
-            targetLines: 40,
+            targetLines: 5,
             dropInterval: 500,
-            mission: '消除 40 行過關',
+            mission: '消除 5 行過關',
             features: ['所有機制同時啟用', '速度最快', '祝你好運！'],
             hasGoodItems: true,
             hasBadItems: true,
@@ -1335,10 +1335,23 @@
 
         hold() {
             if (this.state !== GAME_STATE.PLAYING || !this.currentPiece || !this.canHold) return;
-            const cur = this.currentPiece;
-            // 新設計：不交換，直接清除並存入新方塊
-            this.holdPiece = new Piece(cur.type);
-            this.spawnPiece();
+
+            if (this.holdPiece === null) {
+                // 情境 1：Hold 區是空的 → 存入當前方塊，生成下一個
+                this.holdPiece = new Piece(this.currentPiece.type);
+                this.spawnPiece();
+            } else {
+                // 情境 2：Hold 區已有方塊 → 取出使用，當前方塊丟棄，Hold 清空
+                const holdType = this.holdPiece.type;
+                this.currentPiece = new Piece(holdType);
+                this.currentPiece.setPosition(
+                    this.board.getSpawnX(this.currentPiece),
+                    this.board.getSpawnY()
+                );
+                this.holdPiece = null; // 清空 Hold 區
+                this.pieceSpawnTime = performance.now(); // 重設時間限制
+            }
+
             this.canHold = false;
             this.isLocking = false;
             this.lockResetCount = 0;
