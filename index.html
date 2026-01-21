@@ -1204,17 +1204,38 @@
         }
 
         showEffect(type, value) {
-            let el, className;
+            let el, className, clearTypeClass = '', duration = 1500;
             switch (type) {
                 case 'combo':
                     el = this.comboDisplay;
                     el.textContent = value + ' COMBO!';
                     className = 'show-combo';
+                    // Add screen shake for high combos
+                    if (value >= 3) {
+                        this.shakeScreen(value >= 5 ? 'tetris' : 'normal');
+                    }
                     break;
                 case 'clear':
                     el = this.clearTypeDisplay;
                     el.textContent = value;
                     className = 'show-clear';
+                    // Add specific class based on clear type
+                    if (value === 'SINGLE') {
+                        clearTypeClass = 'clear-single';
+                        duration = 1300;
+                    } else if (value === 'DOUBLE') {
+                        clearTypeClass = 'clear-double';
+                        duration = 1600;
+                        this.shakeScreen('normal');
+                    } else if (value === 'TRIPLE') {
+                        clearTypeClass = 'clear-triple';
+                        duration = 1900;
+                        this.shakeScreen('normal');
+                    } else if (value === 'TETRIS') {
+                        clearTypeClass = 'clear-tetris';
+                        duration = 2200;
+                        this.shakeScreen('tetris');
+                    }
                     break;
                 case 'item':
                 case 'debuff':
@@ -1231,14 +1252,31 @@
                 clearTimeout(this.effectTimers[type]);
             }
 
-            el.classList.remove('hidden', 'show-combo', 'show-clear', 'show-debuff');
+            el.classList.remove('hidden', 'show-combo', 'show-clear', 'show-debuff',
+                'clear-single', 'clear-double', 'clear-triple', 'clear-tetris');
             void el.offsetWidth; // 觸發重繪
             el.classList.add(className);
+            if (clearTypeClass) el.classList.add(clearTypeClass);
 
             this.effectTimers[type] = setTimeout(() => {
                 el.classList.add('hidden');
                 el.classList.remove(className);
-            }, 1500);
+                if (clearTypeClass) el.classList.remove(clearTypeClass);
+            }, duration);
+        }
+
+        shakeScreen(intensity = 'normal') {
+            const canvas = this.gameCanvas;
+            canvas.classList.remove('shake', 'tetris-shake');
+            void canvas.offsetWidth; // Force reflow
+            if (intensity === 'tetris') {
+                canvas.classList.add('tetris-shake');
+            } else {
+                canvas.classList.add('shake');
+            }
+            setTimeout(() => {
+                canvas.classList.remove('shake', 'tetris-shake');
+            }, intensity === 'tetris' ? 500 : 300);
         }
 
         showOverlay(title, msg, scores = null) {
@@ -2334,30 +2372,66 @@
         }
 
         showEffect(type, value) {
-            let el, className;
+            let el, className, clearTypeClass = '', duration = 1500;
             switch (type) {
                 case 'combo':
                     el = this.comboDisplay;
                     el.textContent = value + ' COMBO!';
                     className = 'show-combo';
+                    if (value >= 3) {
+                        this.shakeScreen(value >= 5 ? 'tetris' : 'normal');
+                    }
                     break;
                 case 'clear':
                     el = this.clearTypeDisplay;
                     el.textContent = value;
                     className = 'show-clear';
+                    if (value === 'SINGLE') {
+                        clearTypeClass = 'clear-single';
+                        duration = 1300;
+                    } else if (value === 'DOUBLE') {
+                        clearTypeClass = 'clear-double';
+                        duration = 1600;
+                        this.shakeScreen('normal');
+                    } else if (value === 'TRIPLE') {
+                        clearTypeClass = 'clear-triple';
+                        duration = 1900;
+                        this.shakeScreen('normal');
+                    } else if (value === 'TETRIS') {
+                        clearTypeClass = 'clear-tetris';
+                        duration = 2200;
+                        this.shakeScreen('tetris');
+                    }
                     break;
                 default:
                     return;
             }
 
             if (this.effectTimers[type]) clearTimeout(this.effectTimers[type]);
-            el.classList.remove('hidden', 'show-combo', 'show-clear');
+            el.classList.remove('hidden', 'show-combo', 'show-clear',
+                'clear-single', 'clear-double', 'clear-triple', 'clear-tetris');
             void el.offsetWidth;
             el.classList.add(className);
+            if (clearTypeClass) el.classList.add(clearTypeClass);
             this.effectTimers[type] = setTimeout(() => {
                 el.classList.add('hidden');
                 el.classList.remove(className);
-            }, 1500);
+                if (clearTypeClass) el.classList.remove(clearTypeClass);
+            }, duration);
+        }
+
+        shakeScreen(intensity = 'normal') {
+            const canvas = this.gameCanvas;
+            canvas.classList.remove('shake', 'tetris-shake');
+            void canvas.offsetWidth;
+            if (intensity === 'tetris') {
+                canvas.classList.add('tetris-shake');
+            } else {
+                canvas.classList.add('shake');
+            }
+            setTimeout(() => {
+                canvas.classList.remove('shake', 'tetris-shake');
+            }, intensity === 'tetris' ? 500 : 300);
         }
 
         render(board, piece, ghostY, holdPiece, canHold, nextPieces, showGhost = true) {

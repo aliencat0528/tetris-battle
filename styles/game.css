@@ -400,20 +400,50 @@ header h1 {
     opacity: 0;
     transform: scale(0.5);
     transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
 }
 
+/* Combo Display */
 #combo-display.show-combo {
     opacity: 1;
     transform: scale(1);
     color: #ffd700;
-    animation: popIn 0.3s ease, fadeOut 1.2s ease 0.3s forwards;
+    animation: comboPopIn 0.4s ease, comboFadeOut 1.2s ease 0.4s forwards;
 }
 
+/* Clear Type Animations - Different styles for different clear types */
 #clear-type-display.show-clear {
     opacity: 1;
     transform: scale(1);
     color: #00d4ff;
     animation: popIn 0.3s ease, fadeOut 1.2s ease 0.3s forwards;
+}
+
+#clear-type-display.show-clear.clear-single {
+    font-size: 1.5rem;
+    color: #87ceeb;
+    animation: singleClear 0.3s ease, fadeOut 1s ease 0.3s forwards;
+}
+
+#clear-type-display.show-clear.clear-double {
+    font-size: 2rem;
+    color: #00d4ff;
+    animation: doubleClear 0.4s ease, fadeOut 1.2s ease 0.4s forwards;
+}
+
+#clear-type-display.show-clear.clear-triple {
+    font-size: 2.5rem;
+    color: #9b59b6;
+    text-shadow: 0 0 30px #9b59b6, 0 0 60px #9b59b6;
+    animation: tripleClear 0.5s ease, fadeOut 1.4s ease 0.5s forwards;
+}
+
+#clear-type-display.show-clear.clear-tetris {
+    font-size: 3rem;
+    color: #ffd700;
+    text-shadow: 0 0 40px #ffd700, 0 0 80px #ff6b6b, 0 0 120px #ff4444;
+    animation: tetrisClear 0.6s ease, tetrisFadeOut 1.6s ease 0.6s forwards;
 }
 
 #clear-type-display.show-debuff {
@@ -423,6 +453,19 @@ header h1 {
     animation: shake 0.5s ease, fadeOut 1s ease 0.5s forwards;
 }
 
+/* Battle mode effect layer */
+.player-board-section .combo-display.show-combo,
+.player-board-section .clear-type-display.show-clear {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.player-board-section .combo-display.show-combo {
+    color: #ffd700;
+    animation: comboPopIn 0.4s ease, comboFadeOut 1.2s ease 0.4s forwards;
+}
+
+/* Basic animations */
 @keyframes popIn {
     0% { transform: scale(0.5); }
     50% { transform: scale(1.2); }
@@ -437,6 +480,118 @@ header h1 {
     0%, 100% { transform: translateX(0); }
     20%, 60% { transform: translateX(-5px); }
     40%, 80% { transform: translateX(5px); }
+}
+
+/* Combo specific animations */
+@keyframes comboPopIn {
+    0% { transform: scale(0.3) rotate(-10deg); opacity: 0; }
+    50% { transform: scale(1.3) rotate(5deg); }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+@keyframes comboFadeOut {
+    0% { opacity: 1; transform: scale(1) translateY(0); }
+    100% { opacity: 0; transform: scale(1.2) translateY(-30px); }
+}
+
+/* Single clear animation */
+@keyframes singleClear {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* Double clear animation */
+@keyframes doubleClear {
+    0% { transform: scale(0.5) rotate(-5deg); opacity: 0; }
+    50% { transform: scale(1.15) rotate(3deg); }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+/* Triple clear animation */
+@keyframes tripleClear {
+    0% { transform: scale(0.3) rotate(-10deg); opacity: 0; }
+    30% { transform: scale(1.3) rotate(5deg); }
+    60% { transform: scale(0.95) rotate(-2deg); }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+/* Tetris clear animation - extra flashy */
+@keyframes tetrisClear {
+    0% {
+        transform: scale(0.2) rotate(-15deg);
+        opacity: 0;
+        filter: brightness(2);
+    }
+    25% {
+        transform: scale(1.5) rotate(10deg);
+        filter: brightness(2.5);
+    }
+    50% {
+        transform: scale(0.9) rotate(-5deg);
+        filter: brightness(1.5);
+    }
+    75% {
+        transform: scale(1.1) rotate(2deg);
+    }
+    100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+        filter: brightness(1);
+    }
+}
+
+@keyframes tetrisFadeOut {
+    0% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+        filter: brightness(1);
+    }
+    50% {
+        filter: brightness(1.5);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(1.5) translateY(-40px);
+        filter: brightness(2);
+    }
+}
+
+/* Screen shake effect for game canvas */
+@keyframes screenShake {
+    0%, 100% { transform: translate(0, 0); }
+    10% { transform: translate(-3px, -2px); }
+    20% { transform: translate(3px, 2px); }
+    30% { transform: translate(-2px, 3px); }
+    40% { transform: translate(2px, -3px); }
+    50% { transform: translate(-3px, 1px); }
+    60% { transform: translate(3px, -1px); }
+    70% { transform: translate(-1px, 3px); }
+    80% { transform: translate(1px, -2px); }
+    90% { transform: translate(-2px, 2px); }
+}
+
+#game-canvas.shake,
+.player-board-section canvas.shake {
+    animation: screenShake 0.3s ease;
+}
+
+/* Stronger shake for Tetris */
+@keyframes tetrisShake {
+    0%, 100% { transform: translate(0, 0); }
+    10% { transform: translate(-5px, -4px); }
+    20% { transform: translate(5px, 4px); }
+    30% { transform: translate(-4px, 5px); }
+    40% { transform: translate(4px, -5px); }
+    50% { transform: translate(-5px, 2px); }
+    60% { transform: translate(5px, -2px); }
+    70% { transform: translate(-2px, 5px); }
+    80% { transform: translate(2px, -4px); }
+    90% { transform: translate(-4px, 4px); }
+}
+
+#game-canvas.tetris-shake,
+.player-board-section canvas.tetris-shake {
+    animation: tetrisShake 0.5s ease;
 }
 
 /* Overlay */
