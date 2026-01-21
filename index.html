@@ -245,7 +245,7 @@
                 </div>
                 <div class="controls-items">
                     <strong>📦 道具效果</strong>
-                    <span>💣炸彈: 清除周圍 | ⚡消行: 清底行 | 🔄變形: 變I型</span>
+                    <span>💣炸彈: 清除5×5 | ⚡消行: 清底行 | 🔄變形: 變I型</span>
                     <span>❄️凍結: <em>凍結對手5秒!</em> | 🔨破壞鎚: 清障礙</span>
                 </div>
                 <div class="controls-global">
@@ -561,7 +561,7 @@
 
     // 道具定義（含時限：常見道具 45 秒，稀有道具 60 秒）
     const GOOD_ITEMS = {
-        bomb: { name: '炸彈', icon: '💣', description: '清除周圍 3×3 範圍', duration: 45000, rarity: 'common', target: 'self' },
+        bomb: { name: '炸彈', icon: '💣', description: '清除周圍 5×5 範圍', duration: 45000, rarity: 'common', target: 'self' },
         lineClear: { name: '消行器', icon: '⚡', description: '清除最底下 1 行', duration: 45000, rarity: 'common', target: 'self' },
         freeze: { name: '時間凍結', icon: '❄️', description: '對戰：凍結對手 5 秒', duration: 60000, rarity: 'rare', target: 'opponent' },
         transform: { name: '變形器', icon: '🔄', description: '變成 I 型方塊', duration: 60000, rarity: 'rare', target: 'self' },
@@ -2008,9 +2008,9 @@
 
         useBomb() {
             if (!this.currentPiece) return;
-            const centerX = this.currentPiece.x + 1;
-            const centerY = this.currentPiece.y + 1;
-            this.board.clearArea(centerX - 1, centerY - 1, 3, 3);
+            const centerX = this.currentPiece.x + 2;
+            const centerY = this.currentPiece.y + 2;
+            this.board.clearArea(centerX - 2, centerY - 2, 5, 5);
         }
 
         useLineClear() {
@@ -2646,6 +2646,10 @@
             this.currentPieceHasItem = false;
             this.currentItemType = null;
 
+            // Auto garbage for testing (every 15-20 seconds)
+            this.lastAutoGarbageTime = 0;
+            this.autoGarbageInterval = 15000 + Math.random() * 5000;
+
             this.itemManager.onItemExpired = () => {
                 this.renderer.updateItems(this.itemManager.getSlots(), this.itemManager);
             };
@@ -2666,6 +2670,8 @@
             this.freezeEndTime = 0;
             this.pendingGarbage = 0;
             this.dropInterval = this.stageManager.getDropInterval();
+            this.lastAutoGarbageTime = performance.now();
+            this.autoGarbageInterval = 15000 + Math.random() * 5000;
 
             // Initialize obstacles if needed
             if (this.stageManager.hasObstacles()) {
@@ -2687,6 +2693,13 @@
             // Check freeze effect
             if (this.isFrozen && time >= this.freezeEndTime) {
                 this.isFrozen = false;
+            }
+
+            // Auto garbage lines (for testing - sends 1 line every 15-20 seconds)
+            if (time - this.lastAutoGarbageTime >= this.autoGarbageInterval) {
+                this.receiveGarbage(1);
+                this.lastAutoGarbageTime = time;
+                this.autoGarbageInterval = 15000 + Math.random() * 5000; // Randomize next interval
             }
 
             if (!this.currentPiece) return;
@@ -2873,11 +2886,11 @@
 
             switch (item) {
                 case 'bomb':
-                    // Bomb clears area around YOUR current piece (helps yourself)
+                    // Bomb clears 5x5 area around YOUR current piece (helps yourself)
                     if (this.currentPiece) {
-                        const cx = this.currentPiece.x + 1;
-                        const cy = this.currentPiece.y + 1;
-                        this.board.clearArea(cx - 1, cy - 1, 3, 3);
+                        const cx = this.currentPiece.x + 2;
+                        const cy = this.currentPiece.y + 2;
+                        this.board.clearArea(cx - 2, cy - 2, 5, 5);
                     }
                     break;
                 case 'lineClear':
