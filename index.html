@@ -216,6 +216,17 @@
                             <li>使用破壞鎚可全部清除</li>
                         </ul>
                     </div>
+                    <div class="help-section">
+                        <h4>垃圾行 <span class="item-hint bad">（定時挑戰）</span></h4>
+                        <ul>
+                            <li>每隔一段時間自動從底部升起</li>
+                            <li>關卡 1：每 30 秒 +1 行</li>
+                            <li>關卡 2：每 28 秒 +1 行</li>
+                            <li>關卡 3-4：每 25 秒 +1-2 行</li>
+                            <li>關卡 5+：每 20-15 秒 +2-3 行</li>
+                            <li>垃圾行會有一格空隙可消除</li>
+                        </ul>
+                    </div>
                 </div>
             </aside>
         </main>
@@ -481,60 +492,69 @@
             targetLines: 2,
             dropInterval: 1000,
             mission: '消除 2 行過關',
-            features: ['有利道具開始出現'],
+            features: ['有利道具開始出現', '每30秒出現垃圾行'],
             hasGoodItems: true,
             hasBadItems: false,
             hasObstacles: false,
             hasTimeLimit: false,
             goodItemChance: 0.15,
-            obstacleCount: 0
+            obstacleCount: 0,
+            garbageInterval: 30000,
+            garbageLines: 1
         },
         2: {
             name: '練習',
             targetLines: 3,
             dropInterval: 900,
             mission: '消除 3 行過關',
-            features: ['道具出現機率提升'],
+            features: ['道具出現機率提升', '垃圾行加快'],
             hasGoodItems: true,
             hasBadItems: false,
             hasObstacles: false,
             hasTimeLimit: false,
             goodItemChance: 0.20,
-            obstacleCount: 0
+            obstacleCount: 0,
+            garbageInterval: 25000,
+            garbageLines: 1
         },
         3: {
             name: '障礙',
             targetLines: 4,
             dropInterval: 800,
             mission: '消除 4 行過關',
-            features: ['石頭障礙物出現', '障礙物無法消除'],
+            features: ['石頭障礙物出現', '垃圾行持續'],
             hasGoodItems: true,
             hasBadItems: false,
             hasObstacles: true,
             hasTimeLimit: false,
             goodItemChance: 0.20,
-            obstacleCount: 5
+            obstacleCount: 5,
+            garbageInterval: 22000,
+            garbageLines: 1
         },
         4: {
             name: '限時',
             targetLines: 4,
             dropInterval: 700,
             mission: '消除 4 行過關',
-            features: ['每塊方塊有 8 秒放置時間', '超時方塊會消失'],
+            features: ['每塊方塊有 8 秒放置時間', '垃圾行1-2行'],
             hasGoodItems: true,
             hasBadItems: false,
             hasObstacles: true,
             hasTimeLimit: true,
             timeLimit: 8000,
             goodItemChance: 0.20,
-            obstacleCount: 4
+            obstacleCount: 4,
+            garbageInterval: 20000,
+            garbageLines: 1,
+            garbageLinesMax: 2
         },
         5: {
             name: '危機',
             targetLines: 5,
             dropInterval: 600,
             mission: '消除 5 行過關',
-            features: ['出局道具開始出現', '小心負面效果'],
+            features: ['出局道具開始出現', '垃圾行加劇'],
             hasGoodItems: true,
             hasBadItems: true,
             hasObstacles: true,
@@ -542,14 +562,17 @@
             timeLimit: 8000,
             goodItemChance: 0.18,
             badItemChance: 0.10,
-            obstacleCount: 4
+            obstacleCount: 4,
+            garbageInterval: 18000,
+            garbageLines: 1,
+            garbageLinesMax: 2
         },
         6: {
             name: '終極挑戰',
             targetLines: 5,
             dropInterval: 500,
             mission: '消除 5 行過關',
-            features: ['所有機制同時啟用', '速度最快', '祝你好運！'],
+            features: ['所有機制同時啟用', '垃圾行每15秒2行'],
             hasGoodItems: true,
             hasBadItems: true,
             hasObstacles: true,
@@ -557,7 +580,9 @@
             timeLimit: 8000,
             goodItemChance: 0.15,
             badItemChance: 0.12,
-            obstacleCount: 6
+            obstacleCount: 6,
+            garbageInterval: 15000,
+            garbageLines: 2
         }
     };
 
@@ -1376,6 +1401,13 @@
         getGoodItemChance() { return this.getStageConfig().goodItemChance || 0; }
         getBadItemChance() { return this.getStageConfig().badItemChance || 0; }
         getObstacleCount() { return this.getStageConfig().obstacleCount || 0; }
+        getGarbageInterval() { return this.getStageConfig().garbageInterval || 30000; }
+        getGarbageLines() {
+            const config = this.getStageConfig();
+            const min = config.garbageLines || 1;
+            const max = config.garbageLinesMax || min;
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
     }
 
     // ============== ItemManager Class ==============
@@ -1698,6 +1730,9 @@
             this.currentPieceHasItem = false;
             this.currentItemType = null;
 
+            // 垃圾行計時
+            this.lastGarbageTime = 0;
+
             this.inputHandler = new InputHandler({
                 onLeft: () => this.moveLeft(),
                 onRight: () => this.moveRight(),
@@ -1762,6 +1797,7 @@
             this.state = GAME_STATE.PLAYING;
             this.lastTime = performance.now();
             this.lastDropTime = this.lastTime;
+            this.lastGarbageTime = this.lastTime;
             this.gameLoop(this.lastTime);
         }
 
@@ -1783,6 +1819,15 @@
             // 檢查凍結效果
             if (this.isFrozen && time >= this.freezeEndTime) {
                 this.isFrozen = false;
+            }
+
+            // 自動垃圾行（根據關卡設定）
+            const garbageInterval = this.stageManager.getGarbageInterval();
+            if (garbageInterval > 0 && time - this.lastGarbageTime >= garbageInterval) {
+                const lines = this.stageManager.getGarbageLines();
+                this.board.addGarbageLines(lines);
+                this.renderer.showEffect('debuff', `垃圾行 +${lines}`);
+                this.lastGarbageTime = time;
             }
 
             if (!this.currentPiece) return;
