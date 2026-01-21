@@ -2403,12 +2403,19 @@
                         this.shakeScreen('tetris');
                     }
                     break;
+                case 'item':
+                case 'debuff':
+                case 'stage':
+                    el = this.clearTypeDisplay;
+                    el.textContent = value;
+                    className = type === 'debuff' ? 'show-debuff' : 'show-clear';
+                    break;
                 default:
                     return;
             }
 
             if (this.effectTimers[type]) clearTimeout(this.effectTimers[type]);
-            el.classList.remove('hidden', 'show-combo', 'show-clear',
+            el.classList.remove('hidden', 'show-combo', 'show-clear', 'show-debuff',
                 'clear-single', 'clear-double', 'clear-triple', 'clear-tetris');
             void el.offsetWidth;
             el.classList.add(className);
@@ -2713,6 +2720,7 @@
                 this.currentPiece.isItemPiece = true;
                 this.currentPiece.itemType = 'bad';
                 this.itemManager.applyDebuff(this.currentItemType.item);
+                this.renderer.showEffect('debuff', BAD_ITEMS[this.currentItemType.item].name);
             }
         }
 
@@ -2790,17 +2798,19 @@
         hold() {
             if (!this.currentPiece || !this.canHold) return;
 
+            const currentType = this.currentPiece.type;
+
             if (this.holdPiece === null) {
-                this.holdPiece = new Piece(this.currentPiece.type);
+                this.holdPiece = new Piece(currentType);
                 this.spawnPiece();
             } else {
                 const holdType = this.holdPiece.type;
+                this.holdPiece = new Piece(currentType);
                 this.currentPiece = new Piece(holdType);
                 this.currentPiece.setPosition(
                     this.board.getSpawnX(this.currentPiece),
                     this.board.getSpawnY()
                 );
-                this.holdPiece = null;
             }
 
             this.canHold = false;
@@ -2842,6 +2852,7 @@
                     this.board.clearObstacles();
                     break;
             }
+            this.renderer.showEffect('item', GOOD_ITEMS[item].name);
             this.renderer.updateItems(this.itemManager.getSlots(), this.itemManager);
         }
 
@@ -2884,6 +2895,9 @@
             if (this.currentPieceHasItem && this.currentItemType) {
                 if (this.currentItemType.type === 'good') {
                     const result = this.itemManager.tryAddItem(this.currentItemType.item);
+                    if (result.added) {
+                        this.renderer.showEffect('item', '獲得 ' + GOOD_ITEMS[this.currentItemType.item].name);
+                    }
                     this.renderer.updateItems(this.itemManager.getSlots(), this.itemManager);
                 }
             }
