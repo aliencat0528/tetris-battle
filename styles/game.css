@@ -1016,9 +1016,13 @@ header h1 {
     left: 0;
     top: 0;
     height: 100%;
-    width: 0%;
+    width: var(--garbage-width, 0%);
     background: linear-gradient(90deg, #ff4444, #ff6b6b);
     transition: width 0.3s ease;
+}
+
+.garbage-bar[data-count]::after {
+    width: calc(var(--garbage-width, 0) * 1%);
 }
 
 .garbage-count {
