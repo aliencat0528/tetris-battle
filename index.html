@@ -238,12 +238,12 @@
 
     const MAX_STAGE = 6;
 
-    // 道具定義
+    // 道具定義（含時限：常見道具 45 秒，稀有道具 60 秒）
     const GOOD_ITEMS = {
-        bomb: { name: '炸彈', icon: '💣', description: '清除周圍 3×3 範圍' },
-        lineClear: { name: '消行器', icon: '⚡', description: '清除最底下 1 行' },
-        freeze: { name: '時間凍結', icon: '❄️', description: '暫停下落 5 秒' },
-        transform: { name: '變形器', icon: '🔄', description: '將當前方塊變成 I 型' }
+        bomb: { name: '炸彈', icon: '💣', description: '清除周圍 3×3 範圍', duration: 45000, rarity: 'common' },
+        lineClear: { name: '消行器', icon: '⚡', description: '清除最底下 1 行', duration: 45000, rarity: 'common' },
+        freeze: { name: '時間凍結', icon: '❄️', description: '暫停下落 5 秒', duration: 60000, rarity: 'rare' },
+        transform: { name: '變形器', icon: '🔄', description: '變成 I 型', duration: 60000, rarity: 'rare' }
     };
 
     const BAD_ITEMS = {
@@ -756,20 +756,66 @@
             }
         }
 
-        updateItems(slots) {
-            slots.forEach((item, i) => {
-                const slot = this.itemSlots[i];
-                const iconEl = slot.querySelector('.item-icon');
-                if (item && GOOD_ITEMS[item]) {
-                    iconEl.textContent = GOOD_ITEMS[item].icon;
-                    slot.classList.add('has-item');
-                    slot.title = GOOD_ITEMS[item].description;
+        updateItems(slots, itemManager = null) {
+            slots.forEach((slot, i) => {
+                const slotEl = this.itemSlots[i];
+                const iconEl = slotEl.querySelector('.item-icon');
+
+                if (slot && slot.type && GOOD_ITEMS[slot.type]) {
+                    const itemInfo = GOOD_ITEMS[slot.type];
+                    iconEl.textContent = itemInfo.icon;
+                    slotEl.classList.add('has-item');
+
+                    // 顯示剩餘時間
+                    if (itemManager) {
+                        const remaining = Math.ceil(itemManager.getItemTimeRemaining(i) / 1000);
+                        slotEl.title = `${itemInfo.description} (${remaining}秒)`;
+
+                        // 時間少於 10 秒時閃爍警告
+                        if (remaining <= 10) {
+                            slotEl.classList.add('item-expiring');
+                        } else {
+                            slotEl.classList.remove('item-expiring');
+                        }
+                    } else {
+                        slotEl.title = itemInfo.description;
+                    }
                 } else {
                     iconEl.textContent = '';
-                    slot.classList.remove('has-item');
-                    slot.title = '';
+                    slotEl.classList.remove('has-item', 'item-expiring');
+                    slotEl.title = '';
                 }
             });
+        }
+
+        // 顯示道具替換選擇介面
+        showItemReplaceChoice(pendingItemType) {
+            const itemInfo = GOOD_ITEMS[pendingItemType];
+            if (!itemInfo) return;
+
+            // 創建或更新替換選擇 UI
+            let choiceDiv = document.getElementById('item-replace-choice');
+            if (!choiceDiv) {
+                choiceDiv = document.createElement('div');
+                choiceDiv.id = 'item-replace-choice';
+                document.getElementById('game-container').appendChild(choiceDiv);
+            }
+
+            choiceDiv.innerHTML = `
+                <div class="choice-content">
+                    <p>道具欄已滿！獲得 ${itemInfo.icon} ${itemInfo.name}</p>
+                    <p class="choice-hint">按 1-3 替換對應欄位，按 Esc 放棄</p>
+                </div>
+            `;
+            choiceDiv.classList.add('show');
+        }
+
+        // 隱藏道具替換選擇介面
+        hideItemReplaceChoice() {
+            const choiceDiv = document.getElementById('item-replace-choice');
+            if (choiceDiv) {
+                choiceDiv.classList.remove('show');
+            }
         }
 
         updateDebuffs(debuffs) {
@@ -899,30 +945,115 @@
     class ItemManager {
         constructor() {
             this.reset();
+            this.pendingItem = null; // 待替換的道具
+            this.onItemExpired = null; // 道具過期回調
         }
 
         reset() {
+            // 清除所有道具計時器
+            if (this.slots) {
+                this.slots.forEach(slot => {
+                    if (slot && slot.timer) clearTimeout(slot.timer);
+                });
+            }
             this.slots = [null, null, null];
             this.activeDebuffs = {};
+            this.pendingItem = null;
         }
 
         getSlots() { return this.slots; }
         getActiveDebuffs() { return this.activeDebuffs; }
 
-        addItem(itemType) {
+        // 檢查道具欄是否已滿
+        isFull() {
+            return this.slots.every(s => s !== null);
+        }
+
+        // 嘗試新增道具，返回是否需要玩家選擇替換
+        tryAddItem(itemType) {
             const emptySlot = this.slots.findIndex(s => s === null);
-            if (emptySlot === -1) return false;
-            this.slots[emptySlot] = itemType;
-            return true;
+            if (emptySlot !== -1) {
+                this.addItemToSlot(emptySlot, itemType);
+                return { added: true, needChoice: false };
+            }
+            // 欄位已滿，等待玩家選擇
+            this.pendingItem = itemType;
+            return { added: false, needChoice: true };
+        }
+
+        // 將道具加入指定欄位（含時限）
+        addItemToSlot(slotIndex, itemType) {
+            const itemInfo = GOOD_ITEMS[itemType];
+            const duration = itemInfo ? itemInfo.duration : 45000;
+
+            // 清除舊計時器（如果有）
+            if (this.slots[slotIndex] && this.slots[slotIndex].timer) {
+                clearTimeout(this.slots[slotIndex].timer);
+            }
+
+            const timer = setTimeout(() => {
+                this.expireItem(slotIndex);
+            }, duration);
+
+            this.slots[slotIndex] = {
+                type: itemType,
+                obtainedAt: Date.now(),
+                duration: duration,
+                timer: timer
+            };
+        }
+
+        // 道具過期
+        expireItem(slotIndex) {
+            if (this.slots[slotIndex]) {
+                this.slots[slotIndex] = null;
+                if (this.onItemExpired) {
+                    this.onItemExpired(slotIndex);
+                }
+            }
+        }
+
+        // 玩家確認替換
+        confirmReplace(slotIndex) {
+            if (this.pendingItem && slotIndex >= 0 && slotIndex < MAX_ITEM_SLOTS) {
+                this.addItemToSlot(slotIndex, this.pendingItem);
+                this.pendingItem = null;
+                return true;
+            }
+            return false;
+        }
+
+        // 玩家取消替換
+        cancelReplace() {
+            this.pendingItem = null;
+        }
+
+        hasPendingItem() {
+            return this.pendingItem !== null;
+        }
+
+        getPendingItem() {
+            return this.pendingItem;
         }
 
         useItem(slotIndex) {
             if (slotIndex < 0 || slotIndex >= MAX_ITEM_SLOTS) return null;
-            const item = this.slots[slotIndex];
-            if (item) {
+            const slot = this.slots[slotIndex];
+            if (slot) {
+                if (slot.timer) clearTimeout(slot.timer);
+                const itemType = slot.type;
                 this.slots[slotIndex] = null;
+                return itemType;
             }
-            return item;
+            return null;
+        }
+
+        // 取得道具剩餘時間
+        getItemTimeRemaining(slotIndex) {
+            const slot = this.slots[slotIndex];
+            if (!slot) return 0;
+            const elapsed = Date.now() - slot.obtainedAt;
+            return Math.max(0, slot.duration - elapsed);
         }
 
         getRandomGoodItem() {
@@ -1027,7 +1158,14 @@
             if (this.isGameKey(k)) e.preventDefault();
 
             if (k === 'Enter') { this.cb.onStart(); return; }
-            if (KEY_BINDINGS.PAUSE.includes(k)) { this.cb.onPause(); return; }
+            if (KEY_BINDINGS.PAUSE.includes(k)) {
+                // Esc 也用於取消道具替換
+                if (k === 'Escape' && this.cb.onCancelItemReplace) {
+                    this.cb.onCancelItemReplace();
+                }
+                this.cb.onPause();
+                return;
+            }
             if (KEY_BINDINGS.RESTART.includes(k)) { this.cb.onRestart(); return; }
             if (KEY_BINDINGS.LEFT.includes(k)) { this.cb.onLeft(); this.startRepeat('left', () => this.cb.onLeft()); return; }
             if (KEY_BINDINGS.RIGHT.includes(k)) { this.cb.onRight(); this.startRepeat('right', () => this.cb.onRight()); return; }
@@ -1122,8 +1260,15 @@
                 onPause: () => this.togglePause(),
                 onRestart: () => this.restart(),
                 onStart: () => this.start(),
-                onUseItem: (slot) => this.useItem(slot)
+                onUseItem: (slot) => this.useItem(slot),
+                onCancelItemReplace: () => this.cancelItemReplace()
             });
+
+            // 設定道具過期回調
+            this.itemManager.onItemExpired = (slotIndex) => {
+                this.renderer.showEffect('item', '道具已過期');
+                this.renderer.updateItems(this.itemManager.getSlots(), this.itemManager);
+            };
 
             this.initDisplay();
         }
@@ -1136,7 +1281,7 @@
             this.renderer.updateCombo(0);
             this.renderer.updateStage(1, STAGES[1]);
             this.renderer.updateProgress(0, STAGES[1].targetLines);
-            this.renderer.updateItems([null, null, null]);
+            this.renderer.updateItems(this.itemManager.getSlots(), this.itemManager);
             this.renderer.clearGameCanvas();
             this.renderer.drawGrid();
         }
@@ -1359,6 +1504,17 @@
 
         useItem(slotIndex) {
             if (this.state !== GAME_STATE.PLAYING) return;
+
+            // 如果有待替換的道具，按 1-3 會替換對應欄位
+            if (this.itemManager.hasPendingItem()) {
+                if (this.itemManager.confirmReplace(slotIndex)) {
+                    this.renderer.hideItemReplaceChoice();
+                    this.renderer.showEffect('item', '替換成功');
+                    this.renderer.updateItems(this.itemManager.getSlots(), this.itemManager);
+                }
+                return;
+            }
+
             const item = this.itemManager.useItem(slotIndex);
             if (!item) return;
 
@@ -1376,8 +1532,17 @@
                     this.useTransform();
                     break;
             }
-            this.renderer.updateItems(this.itemManager.getSlots());
+            this.renderer.updateItems(this.itemManager.getSlots(), this.itemManager);
             this.renderer.showEffect('item', GOOD_ITEMS[item].name);
+        }
+
+        // 取消道具替換（按 Esc）
+        cancelItemReplace() {
+            if (this.itemManager.hasPendingItem()) {
+                this.itemManager.cancelReplace();
+                this.renderer.hideItemReplaceChoice();
+                this.renderer.showEffect('item', '放棄道具');
+            }
         }
 
         useBomb() {
@@ -1433,11 +1598,14 @@
             // 處理道具方塊
             if (this.currentPieceHasItem && this.currentItemType) {
                 if (this.currentItemType.type === 'good') {
-                    const added = this.itemManager.addItem(this.currentItemType.item);
-                    if (added) {
+                    const result = this.itemManager.tryAddItem(this.currentItemType.item);
+                    if (result.added) {
                         this.renderer.showEffect('item', '獲得 ' + GOOD_ITEMS[this.currentItemType.item].name);
+                    } else if (result.needChoice) {
+                        // 道具欄已滿，顯示替換選擇
+                        this.renderer.showItemReplaceChoice(this.currentItemType.item);
                     }
-                    this.renderer.updateItems(this.itemManager.getSlots());
+                    this.renderer.updateItems(this.itemManager.getSlots(), this.itemManager);
                 }
             }
 
@@ -1494,7 +1662,7 @@
             this.renderer.updateCombo(this.scoreManager.getCombo());
             this.renderer.updateStage(this.stageManager.getStage(), this.stageManager.getStageConfig());
             this.renderer.updateProgress(this.stageManager.getStageLines(), this.stageManager.getTargetLines());
-            this.renderer.updateItems(this.itemManager.getSlots());
+            this.renderer.updateItems(this.itemManager.getSlots(), this.itemManager);
 
             if (!this.stageManager.hasTimeLimit()) {
                 this.renderer.updateTimeLimit(0, false);

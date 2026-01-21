@@ -223,6 +223,49 @@ header h1 {
     text-align: center;
 }
 
+/* 道具即將過期閃爍 */
+.item-slot.item-expiring {
+    animation: itemExpiring 0.5s ease-in-out infinite;
+    border-color: #ff4444;
+}
+
+@keyframes itemExpiring {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* 道具替換選擇介面 */
+#item-replace-choice {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.95);
+    border: 2px solid #ffd700;
+    border-radius: 10px;
+    padding: 20px 30px;
+    z-index: 100;
+    text-align: center;
+    display: none;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+}
+
+#item-replace-choice.show {
+    display: block;
+    animation: popIn 0.3s ease;
+}
+
+#item-replace-choice .choice-content p {
+    margin: 10px 0;
+    color: #fff;
+    font-size: 1.1rem;
+}
+
+#item-replace-choice .choice-hint {
+    color: #ffd700;
+    font-size: 0.9rem;
+}
+
 /* Board Section */
 #board-section {
     position: relative;
