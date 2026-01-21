@@ -1709,13 +1709,36 @@ body.theme-bubble #help-panel,
 body.theme-bubble #help-panel h4,
 body.theme-bubble #help-panel p,
 body.theme-bubble #help-panel li,
+body.theme-bubble #help-panel .item-entry,
+body.theme-bubble #help-panel .item-hint,
+body.theme-bubble #help-panel .item-note,
+body.theme-bubble #help-panel .item-list,
+body.theme-bubble #help-panel .key-item,
+body.theme-bubble #help-panel .help-section,
 body:not(.theme-candy):not(.theme-space) .hint,
 body:not(.theme-candy):not(.theme-space) .controls-hint,
 body:not(.theme-candy):not(.theme-space) #help-panel,
 body:not(.theme-candy):not(.theme-space) #help-panel h4,
 body:not(.theme-candy):not(.theme-space) #help-panel p,
-body:not(.theme-candy):not(.theme-space) #help-panel li {
-    color: #3a3a5a !important;
+body:not(.theme-candy):not(.theme-space) #help-panel li,
+body:not(.theme-candy):not(.theme-space) #help-panel .item-entry,
+body:not(.theme-candy):not(.theme-space) #help-panel .item-hint,
+body:not(.theme-candy):not(.theme-space) #help-panel .item-note,
+body:not(.theme-candy):not(.theme-space) #help-panel .item-list,
+body:not(.theme-candy):not(.theme-space) #help-panel .key-item,
+body:not(.theme-candy):not(.theme-space) #help-panel .help-section {
+    color: #2a2a4a !important;
+}
+
+/* 泡泡主題道具說明特殊樣式 */
+body.theme-bubble #help-panel .item-hint,
+body:not(.theme-candy):not(.theme-space) #help-panel .item-hint {
+    color: #4a8a4a !important;
+}
+
+body.theme-bubble #help-panel .item-hint.bad,
+body:not(.theme-candy):not(.theme-space) #help-panel .item-hint.bad {
+    color: #8a4a4a !important;
 }
 
 body.theme-bubble .stat-label,
@@ -2089,24 +2112,59 @@ body.theme-candy #theme-background::after {
     50% { transform: translateX(-20px) scaleY(1.1); }
 }
 
-/* 糖果主題泡泡 - 粉紫黃色系 */
+/* 糖果主題泡泡 - 愛心/糖果形狀 */
 body.theme-candy .bubble {
-    background: radial-gradient(circle at 30% 30%,
-        rgba(255, 255, 255, 0.7),
-        rgba(255, 180, 220, 0.4) 35%,
-        rgba(200, 150, 230, 0.3) 55%,
-        rgba(255, 230, 100, 0.2) 70%,
-        transparent 85%);
-    box-shadow:
-        inset 0 0 40px rgba(255, 255, 255, 0.6),
-        0 0 30px rgba(255, 180, 220, 0.5),
-        0 0 50px rgba(200, 150, 230, 0.3);
-    animation: floatBubble linear infinite, candyBubbleGlow 2s ease-in-out infinite;
+    background: none;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    animation: floatBubble linear infinite;
 }
 
-@keyframes candyBubbleGlow {
-    0%, 100% { filter: hue-rotate(0deg) brightness(1); }
-    50% { filter: hue-rotate(30deg) brightness(1.1); }
+/* 愛心形狀 (奇數泡泡) */
+body.theme-candy .bubble::before {
+    content: '💖';
+    position: absolute;
+    font-size: inherit;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    filter: drop-shadow(0 0 10px rgba(255, 150, 200, 0.8));
+    animation: candyHeartPulse 2s ease-in-out infinite;
+    transform: none;
+    background: none;
+    border-radius: 0;
+}
+
+body.theme-candy .bubble::after {
+    display: none;
+}
+
+/* 糖果形狀變化 - 使用 nth-child 交替顯示不同圖案 */
+body.theme-candy .bubble:nth-child(3n)::before {
+    content: '🍬';
+    animation: candyCandySpin 3s linear infinite;
+}
+
+body.theme-candy .bubble:nth-child(3n+1)::before {
+    content: '💕';
+}
+
+body.theme-candy .bubble:nth-child(3n+2)::before {
+    content: '🍭';
+    animation: candyCandySpin 4s linear infinite;
+}
+
+@keyframes candyHeartPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+}
+
+@keyframes candyCandySpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 /* 糖果漂浮星星 - 粉紫黃色 */
@@ -2279,31 +2337,67 @@ body.theme-space #theme-background::after {
     100% { transform: rotate(360deg); }
 }
 
-/* 太空主題泡泡 - 改為星球效果 */
+/* 太空主題 - 隱藏漂浮泡泡 */
 body.theme-space .bubble {
-    background: radial-gradient(circle at 35% 35%,
-        rgba(200, 200, 220, 0.4),
-        rgba(138, 43, 226, 0.3) 40%,
-        rgba(75, 0, 130, 0.2) 60%,
-        rgba(30, 30, 60, 0.3) 80%,
-        transparent 90%);
+    display: none;
+}
+
+/* 太空主題 - 旋轉星球 */
+body.theme-space #background-effects::before,
+body.theme-space #background-effects::after {
+    content: '';
+    position: fixed;
+    border-radius: 50%;
+    animation: spacePlanetRotate 20s linear infinite;
+    pointer-events: none;
+}
+
+/* 星球 1 - 左上角 (紫色星球) */
+body.theme-space #background-effects::before {
+    top: 8%;
+    left: 5%;
+    width: 120px;
+    height: 120px;
+    background:
+        radial-gradient(circle at 35% 35%,
+            rgba(255, 255, 255, 0.8) 0%,
+            rgba(200, 150, 255, 0.6) 20%,
+            rgba(138, 43, 226, 0.8) 50%,
+            rgba(75, 0, 130, 0.9) 80%,
+            rgba(30, 0, 60, 1) 100%);
+    box-shadow:
+        inset -20px -20px 40px rgba(0, 0, 0, 0.6),
+        inset 10px 10px 30px rgba(255, 255, 255, 0.3),
+        0 0 60px rgba(138, 43, 226, 0.6),
+        0 0 120px rgba(75, 0, 130, 0.4);
+    animation-duration: 25s;
+}
+
+/* 星球 2 - 右下角 (藍色星球) */
+body.theme-space #background-effects::after {
+    bottom: 10%;
+    right: 8%;
+    width: 90px;
+    height: 90px;
+    background:
+        radial-gradient(circle at 30% 30%,
+            rgba(255, 255, 255, 0.9) 0%,
+            rgba(150, 200, 255, 0.6) 20%,
+            rgba(30, 144, 255, 0.8) 50%,
+            rgba(65, 105, 225, 0.9) 80%,
+            rgba(25, 25, 112, 1) 100%);
     box-shadow:
         inset -15px -15px 30px rgba(0, 0, 0, 0.5),
-        inset 5px 5px 20px rgba(255, 255, 255, 0.2),
-        0 0 30px rgba(138, 43, 226, 0.4),
-        0 0 60px rgba(75, 0, 130, 0.2);
-    border: 1px solid rgba(138, 43, 226, 0.2);
+        inset 8px 8px 25px rgba(255, 255, 255, 0.4),
+        0 0 50px rgba(30, 144, 255, 0.5),
+        0 0 100px rgba(65, 105, 225, 0.3);
+    animation-duration: 18s;
+    animation-direction: reverse;
 }
 
-body.theme-space .bubble::before {
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.6), transparent 70%);
-    width: 25%;
-    height: 15%;
-}
-
-body.theme-space .bubble::after {
-    background: none;
-    border: none;
+@keyframes spacePlanetRotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 /* 大流星效果 - 更大更明顯 */
