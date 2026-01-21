@@ -12,6 +12,26 @@
             <h1>TETRIS</h1>
         </header>
 
+        <!-- 模式選擇畫面 -->
+        <div id="mode-selection">
+            <div id="mode-selection-content">
+                <h2>選擇遊戲模式</h2>
+                <div id="mode-buttons">
+                    <button id="single-mode-btn" class="mode-btn">
+                        <span class="mode-icon">🎮</span>
+                        <span class="mode-title">單人模式</span>
+                        <span class="mode-desc">經典俄羅斯方塊，挑戰關卡</span>
+                    </button>
+                    <button id="battle-mode-btn" class="mode-btn">
+                        <span class="mode-icon">⚔️</span>
+                        <span class="mode-title">雙人對戰</span>
+                        <span class="mode-desc">本地對戰，發送垃圾行擊敗對手</span>
+                    </button>
+                </div>
+                <p class="mode-hint">使用滑鼠點擊或按 1/2 選擇</p>
+            </div>
+        </div>
+
         <!-- 關卡資訊區 -->
         <div id="stage-info">
             <div id="stage-display">
@@ -391,6 +411,7 @@
     };
 
     const GAME_STATE = { IDLE: 'idle', PLAYING: 'playing', PAUSED: 'paused', GAME_OVER: 'game_over' };
+    const GAME_MODE = { SINGLE: 'single', BATTLE: 'battle' };
 
     const KEY_BINDINGS = {
         LEFT: ['ArrowLeft', 'KeyA'],
@@ -1841,8 +1862,49 @@
     }
 
     // ============== Initialize ==============
+    let currentGameMode = null;
+
+    function initModeSelection() {
+        const modeSelection = document.getElementById('mode-selection');
+        const singleBtn = document.getElementById('single-mode-btn');
+        const battleBtn = document.getElementById('battle-mode-btn');
+
+        // Mode button click handlers
+        singleBtn.addEventListener('click', () => selectMode(GAME_MODE.SINGLE));
+        battleBtn.addEventListener('click', () => selectMode(GAME_MODE.BATTLE));
+
+        // Keyboard shortcuts for mode selection
+        document.addEventListener('keydown', (e) => {
+            if (!modeSelection.classList.contains('hidden')) {
+                if (e.code === 'Digit1' || e.code === 'Numpad1') {
+                    selectMode(GAME_MODE.SINGLE);
+                } else if (e.code === 'Digit2' || e.code === 'Numpad2') {
+                    selectMode(GAME_MODE.BATTLE);
+                }
+            }
+        });
+    }
+
+    function selectMode(mode) {
+        currentGameMode = mode;
+        const modeSelection = document.getElementById('mode-selection');
+        modeSelection.classList.add('hidden');
+
+        if (mode === GAME_MODE.SINGLE) {
+            // Single player mode
+            window.tetrisGame = new Game();
+            console.log('Single player mode started');
+        } else {
+            // Battle mode - will be implemented in next phase
+            // For now, also start single player as placeholder
+            window.tetrisGame = new Game();
+            console.log('Battle mode selected (implementation coming soon)');
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
-        window.tetrisGame = new Game();
+        // Initialize mode selection
+        initModeSelection();
 
         // 說明面板展開/收合
         const helpPanel = document.getElementById('help-panel');
@@ -1854,7 +1916,7 @@
             helpToggle.setAttribute('aria-label', isCollapsed ? '展開說明' : '收合說明');
         });
 
-        console.log('Tetris ready! Press Enter to start.');
+        console.log('Tetris ready! Select game mode to start.');
     });
     </script>
 </body>
