@@ -243,7 +243,8 @@
         bomb: { name: '炸彈', icon: '💣', description: '清除周圍 3×3 範圍', duration: 45000, rarity: 'common' },
         lineClear: { name: '消行器', icon: '⚡', description: '清除最底下 1 行', duration: 45000, rarity: 'common' },
         freeze: { name: '時間凍結', icon: '❄️', description: '暫停下落 5 秒', duration: 60000, rarity: 'rare' },
-        transform: { name: '變形器', icon: '🔄', description: '變成 I 型', duration: 60000, rarity: 'rare' }
+        transform: { name: '變形器', icon: '🔄', description: '變成 I 型', duration: 60000, rarity: 'rare' },
+        hammer: { name: '破壞鎚', icon: '🔨', description: '清除所有障礙物', duration: 60000, rarity: 'rare' }
     };
 
     const BAD_ITEMS = {
@@ -424,15 +425,18 @@
         clearLines() {
             const cleared = [];
             for (let row = this.rows - 1; row >= 0; row--) {
-                // 檢查是否有障礙物，有的話跳過
-                const hasObstacle = this.obstacles.some(o => o.y === row);
-                if (hasObstacle) continue;
-
-                if (this.grid[row].every(cell => cell !== null)) cleared.push(row);
+                // 檢查該行是否填滿（包含障礙物也算填滿）
+                if (this.grid[row].every(cell => cell !== null)) {
+                    cleared.push(row);
+                }
             }
             cleared.forEach((line, i) => {
+                // 移除該行的障礙物
+                this.obstacles = this.obstacles.filter(o => o.y !== line + i);
+
                 this.grid.splice(line + i, 1);
                 this.grid.unshift(Array(this.cols).fill(null));
+
                 // 更新障礙物位置（在被清除行上方的要下移）
                 this.obstacles.forEach(o => {
                     if (o.y < line + i) o.y++;
@@ -1531,6 +1535,9 @@
                 case 'transform':
                     this.useTransform();
                     break;
+                case 'hammer':
+                    this.useHammer();
+                    break;
             }
             this.renderer.updateItems(this.itemManager.getSlots(), this.itemManager);
             this.renderer.showEffect('item', GOOD_ITEMS[item].name);
@@ -1571,6 +1578,17 @@
             // 確保新方塊不會碰撞
             if (this.board.collides(this.currentPiece, 0, 0)) {
                 this.currentPiece.setPosition(this.board.getSpawnX(this.currentPiece), this.board.getSpawnY());
+            }
+        }
+
+        useHammer() {
+            // 清除所有障礙物
+            const count = this.board.getObstacles().length;
+            if (count > 0) {
+                this.board.clearObstacles();
+                this.renderer.showEffect('item', `清除 ${count} 個障礙物`);
+            } else {
+                this.renderer.showEffect('item', '沒有障礙物');
             }
         }
 
