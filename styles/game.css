@@ -1668,56 +1668,121 @@ body:not(.theme-candy):not(.theme-space) header h1 {
 /* 泡泡主題文字顏色 - 深色以便閱讀 */
 body.theme-bubble,
 body:not(.theme-candy):not(.theme-space) {
-    color: #5a5a7a;
+    color: #3a3a5a;
 }
 
+/* 泡泡主題 - 遊戲區塊背景（遮蓋泡泡） */
+body.theme-bubble #game-container,
+body:not(.theme-candy):not(.theme-space) #game-container {
+    position: relative;
+    z-index: 10;
+    background: linear-gradient(135deg,
+        rgba(255, 240, 245, 0.95) 0%,
+        rgba(240, 248, 255, 0.92) 25%,
+        rgba(255, 250, 240, 0.92) 50%,
+        rgba(245, 255, 250, 0.92) 75%,
+        rgba(255, 245, 238, 0.95) 100%);
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* 泡泡主題側邊欄標題 - 黑字高對比 */
 body.theme-bubble #hold-section h3,
 body.theme-bubble #next-section h3,
 body.theme-bubble #items-section h3,
 body:not(.theme-candy):not(.theme-space) #hold-section h3,
 body:not(.theme-candy):not(.theme-space) #next-section h3,
 body:not(.theme-candy):not(.theme-space) #items-section h3 {
-    background: linear-gradient(90deg, #d050a0, #6080c0);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.8));
+    color: #2a2a4a;
+    background: none;
+    -webkit-text-fill-color: #2a2a4a;
+    font-weight: bold;
+    text-shadow: none;
+    filter: none;
+}
+
+/* 泡泡主題說明文字 - 黑字高對比 */
+body.theme-bubble .hint,
+body.theme-bubble .controls-hint,
+body.theme-bubble #help-panel,
+body.theme-bubble #help-panel h4,
+body.theme-bubble #help-panel p,
+body.theme-bubble #help-panel li,
+body:not(.theme-candy):not(.theme-space) .hint,
+body:not(.theme-candy):not(.theme-space) .controls-hint,
+body:not(.theme-candy):not(.theme-space) #help-panel,
+body:not(.theme-candy):not(.theme-space) #help-panel h4,
+body:not(.theme-candy):not(.theme-space) #help-panel p,
+body:not(.theme-candy):not(.theme-space) #help-panel li {
+    color: #3a3a5a !important;
 }
 
 body.theme-bubble .stat-label,
 body:not(.theme-candy):not(.theme-space) .stat-label {
-    color: #8b8bab;
+    color: #4a4a6a;
 }
 
 body.theme-bubble .stat-value,
 body:not(.theme-candy):not(.theme-space) .stat-value {
-    color: #5a5a7a;
-    text-shadow: 0 0 10px rgba(255, 182, 193, 0.3);
+    color: #2a2a4a;
+    text-shadow: none;
+    font-weight: bold;
+}
+
+/* 泡泡主題模式選擇畫面 - 夢幻風格 */
+body.theme-bubble #mode-selection,
+body:not(.theme-candy):not(.theme-space) #mode-selection {
+    background: linear-gradient(135deg,
+        rgba(232, 160, 200, 0.97) 0%,
+        rgba(192, 160, 224, 0.95) 20%,
+        rgba(144, 200, 232, 0.93) 40%,
+        rgba(160, 224, 208, 0.93) 60%,
+        rgba(240, 232, 176, 0.95) 80%,
+        rgba(248, 208, 160, 0.97) 100%);
 }
 
 body.theme-bubble #mode-selection-content h2,
 body:not(.theme-candy):not(.theme-space) #mode-selection-content h2 {
-    background: linear-gradient(90deg, #d050a0, #6080c0, #d0a040);
+    background: linear-gradient(90deg, #8b3a75, #3a5a8b, #8b6a3a);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.9));
+    filter: drop-shadow(0 2px 4px rgba(255, 255, 255, 0.8));
+    font-weight: bold;
 }
 
-/* 泡泡主題按鈕 */
+/* 泡泡主題按鈕 - 高對比 */
 body.theme-bubble .mode-btn,
 body:not(.theme-candy):not(.theme-space) .mode-btn {
-    background: rgba(255, 255, 255, 0.75);
-    border: 2px solid rgba(208, 80, 160, 0.4);
-    box-shadow: 0 0 20px rgba(184, 224, 240, 0.4);
+    background: rgba(255, 255, 255, 0.9);
+    border: 3px solid rgba(139, 90, 139, 0.5);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    color: #3a3a5a;
+}
+
+body.theme-bubble .mode-btn .mode-title,
+body:not(.theme-candy):not(.theme-space) .mode-btn .mode-title {
+    color: #2a2a4a;
+    font-weight: bold;
+}
+
+body.theme-bubble .mode-btn .mode-desc,
+body:not(.theme-candy):not(.theme-space) .mode-btn .mode-desc {
     color: #4a4a6a;
 }
 
 body.theme-bubble .mode-btn:hover,
 body:not(.theme-candy):not(.theme-space) .mode-btn:hover {
-    background: rgba(255, 255, 255, 0.9);
-    border-color: rgba(96, 128, 192, 0.7);
-    box-shadow: 0 0 30px rgba(208, 80, 160, 0.4);
+    background: rgba(255, 255, 255, 1);
+    border-color: rgba(139, 58, 117, 0.8);
+    box-shadow: 0 8px 30px rgba(139, 58, 117, 0.3);
+    transform: translateY(-5px);
+}
+
+body.theme-bubble .mode-hint,
+body:not(.theme-candy):not(.theme-space) .mode-hint {
+    color: #4a4a6a;
 }
 
 /* 泡泡主題進度條 */
