@@ -1030,7 +1030,8 @@ header h1 {
 }
 
 #battle-controls-help .controls-player,
-#battle-controls-help .controls-items {
+#battle-controls-help .controls-items,
+#battle-controls-help .controls-tips {
     display: flex;
     flex-direction: column;
     gap: 2px;
@@ -1043,14 +1044,16 @@ header h1 {
 }
 
 #battle-controls-help .controls-player strong,
-#battle-controls-help .controls-items strong {
+#battle-controls-help .controls-items strong,
+#battle-controls-help .controls-tips strong {
     color: #ffd700;
     margin-bottom: 4px;
     font-size: 0.85rem;
 }
 
 #battle-controls-help .controls-player span,
-#battle-controls-help .controls-items span {
+#battle-controls-help .controls-items span,
+#battle-controls-help .controls-tips span {
     color: rgba(255, 255, 255, 0.75);
     line-height: 1.4;
 }
