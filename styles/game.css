@@ -16,14 +16,18 @@ body {
     color: #fff;
 }
 
-/* 泡泡主題背景 - 夢幻淡色系 */
+/* 泡泡主題背景 - 夢幻彩虹漸層（參考圖片） */
 body.theme-bubble,
 body:not(.theme-candy):not(.theme-space) {
     background: linear-gradient(135deg,
-        #e8f4fc 0%,      /* 淡藍白 */
-        #fef6e4 30%,     /* 淡黃 */
-        #fff0f5 60%,     /* 淡粉 */
-        #e6f3ff 100%);   /* 淡藍 */
+        #f5c0df 0%,      /* 粉紫 - 左上 */
+        #d4b8e8 15%,     /* 淡紫 */
+        #b8e0f0 30%,     /* 淡藍 */
+        #c8f0e8 45%,     /* 薄荷綠 */
+        #e8f8f0 55%,     /* 淺青白 */
+        #f8f0d0 70%,     /* 淡黃 */
+        #ffe8c8 85%,     /* 淡橘 */
+        #fff8f0 100%);   /* 白底 */
 }
 
 #game-container {
@@ -1636,23 +1640,23 @@ header h1 {
    大泡泡漂浮 + 水波紋漣漪 + 夢幻淡色系
    ============================================ */
 
-/* 泡泡主題標題 - 夢幻漸層 */
+/* 泡泡主題標題 - 高彩度漸層（與背景區隔） */
 body.theme-bubble header h1,
 body:not(.theme-candy):not(.theme-space) header h1 {
     background: linear-gradient(90deg,
-        #ffb6c1,    /* 淡粉 */
-        #87ceeb,    /* 淡藍 */
-        #ffefd5,    /* 淡橘 */
-        #fffacd,    /* 淡黃 */
-        #e6e6fa,    /* 淡紫 */
-        #ffb6c1);   /* 淡粉 */
+        #e060a0,    /* 桃紅 */
+        #8060c0,    /* 紫 */
+        #40a0d0,    /* 藍 */
+        #40c0a0,    /* 青綠 */
+        #e0a040,    /* 橘黃 */
+        #e060a0);   /* 桃紅 */
     background-size: 300% 100%;
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
     animation: bubbleTitleGradient 4s linear infinite;
     text-shadow: none;
-    filter: drop-shadow(0 0 15px rgba(255, 182, 193, 0.5));
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 20px rgba(128, 96, 192, 0.5));
 }
 
 @keyframes bubbleTitleGradient {
@@ -1672,10 +1676,11 @@ body.theme-bubble #items-section h3,
 body:not(.theme-candy):not(.theme-space) #hold-section h3,
 body:not(.theme-candy):not(.theme-space) #next-section h3,
 body:not(.theme-candy):not(.theme-space) #items-section h3 {
-    background: linear-gradient(90deg, #ffb6c1, #87ceeb);
+    background: linear-gradient(90deg, #d050a0, #6080c0);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.8));
 }
 
 body.theme-bubble .stat-label,
@@ -1691,38 +1696,39 @@ body:not(.theme-candy):not(.theme-space) .stat-value {
 
 body.theme-bubble #mode-selection-content h2,
 body:not(.theme-candy):not(.theme-space) #mode-selection-content h2 {
-    background: linear-gradient(90deg, #ffb6c1, #87ceeb, #fffacd);
+    background: linear-gradient(90deg, #d050a0, #6080c0, #d0a040);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.9));
 }
 
 /* 泡泡主題按鈕 */
 body.theme-bubble .mode-btn,
 body:not(.theme-candy):not(.theme-space) .mode-btn {
-    background: rgba(255, 255, 255, 0.6);
-    border: 2px solid rgba(255, 182, 193, 0.5);
-    box-shadow: 0 0 20px rgba(173, 216, 230, 0.3);
-    color: #5a5a7a;
+    background: rgba(255, 255, 255, 0.75);
+    border: 2px solid rgba(208, 80, 160, 0.4);
+    box-shadow: 0 0 20px rgba(184, 224, 240, 0.4);
+    color: #4a4a6a;
 }
 
 body.theme-bubble .mode-btn:hover,
 body:not(.theme-candy):not(.theme-space) .mode-btn:hover {
-    background: rgba(255, 255, 255, 0.8);
-    border-color: rgba(135, 206, 235, 0.7);
-    box-shadow: 0 0 30px rgba(255, 182, 193, 0.5);
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(96, 128, 192, 0.7);
+    box-shadow: 0 0 30px rgba(208, 80, 160, 0.4);
 }
 
 /* 泡泡主題進度條 */
 body.theme-bubble #progress-fill,
 body:not(.theme-candy):not(.theme-space) #progress-fill {
-    background: linear-gradient(90deg, #ffb6c1, #87ceeb, #fffacd);
+    background: linear-gradient(90deg, #e060a0, #6080c0, #40c0a0, #e0a040);
 }
 
 /* 泡泡主題遊戲面板邊框 */
 body.theme-bubble #board-section::before,
 body:not(.theme-candy):not(.theme-space) #board-section::before {
-    background: linear-gradient(45deg, #ffb6c1, #87ceeb, #fffacd, #e6e6fa, #ffb6c1);
+    background: linear-gradient(45deg, #e060a0, #8060c0, #40a0d0, #40c0a0, #e0a040, #e060a0);
     background-size: 300% 300%;
     animation: bubbleBorderGlow 4s ease infinite;
 }
@@ -1732,15 +1738,15 @@ body:not(.theme-candy):not(.theme-space) #board-section::before {
     50% { background-position: 100% 50%; }
 }
 
-/* 泡泡主題背景 - 夢幻淡色系 (淡黃、淡橘、淡藍、淡粉、白) */
+/* 泡泡主題背景 - 夢幻彩虹光暈層 */
 body.theme-bubble #theme-background,
 body:not(.theme-candy):not(.theme-space) #theme-background {
     background:
-        radial-gradient(ellipse 100% 60% at 50% 100%, rgba(255, 218, 185, 0.4), transparent),   /* 淡橘底部 */
-        radial-gradient(ellipse 70% 50% at 20% 70%, rgba(173, 216, 230, 0.35), transparent),    /* 淡藍左下 */
-        radial-gradient(ellipse 70% 50% at 80% 60%, rgba(255, 182, 193, 0.3), transparent),     /* 淡粉右側 */
-        radial-gradient(ellipse 60% 40% at 50% 20%, rgba(255, 250, 205, 0.4), transparent),     /* 淡黃上方 */
-        radial-gradient(ellipse 40% 30% at 30% 40%, rgba(255, 255, 255, 0.5), transparent);     /* 白色光暈 */
+        radial-gradient(ellipse 80% 50% at 0% 30%, rgba(245, 192, 223, 0.6), transparent),      /* 粉紫左側 */
+        radial-gradient(ellipse 70% 50% at 100% 40%, rgba(255, 232, 200, 0.5), transparent),    /* 淡橘右側 */
+        radial-gradient(ellipse 60% 40% at 50% 50%, rgba(200, 240, 232, 0.4), transparent),     /* 薄荷中央 */
+        radial-gradient(ellipse 80% 60% at 30% 80%, rgba(184, 224, 240, 0.5), transparent),     /* 淡藍左下 */
+        radial-gradient(ellipse 100% 50% at 50% 100%, rgba(255, 255, 255, 0.8), transparent);   /* 白色底部 */
     animation: bubbleBackgroundWave 8s ease-in-out infinite;
 }
 
@@ -2346,12 +2352,14 @@ body.theme-space #progress-fill {
 }
 
 .encourage-text {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
+    line-height: 1.8;
     color: #ff9ff3;
     text-shadow:
         0 0 15px rgba(255, 159, 243, 0.6),
         0 0 30px rgba(255, 159, 243, 0.3);
     animation: encouragePulse 2s ease-in-out infinite;
+    white-space: pre-line;
 }
 
 @keyframes encouragePulse {

@@ -43,16 +43,16 @@ class EffectsManager {
             space: { min: 50, max: 120 }    // 太空 - 大星球效果
         };
 
-        // 鼓勵訊息列表
+        // 鼓勵訊息列表（含換行）
         this.encourageMessages = [
-            '再試一次！你可以的！',
-            '失敗是成功之母！',
-            '下次一定更棒！',
-            '堅持就是勝利！',
-            '每次嘗試都是進步！',
-            '繼續加油！',
-            '你已經很棒了！',
-            '再來一局吧！'
+            '再試一次！<br>你可以的！',
+            '失敗是成功之母！<br>繼續加油！',
+            '下次一定更棒！<br>別放棄！',
+            '堅持就是勝利！<br>再來一局！',
+            '每次嘗試都是進步！<br>你很棒！',
+            '繼續加油！<br>勝利在望！',
+            '你已經很棒了！<br>再挑戰一次！',
+            '再來一局吧！<br>這次會更好！'
         ];
 
         // 勝利訊息列表
@@ -523,7 +523,7 @@ class EffectsManager {
 
             const encourageText = document.createElement('p');
             encourageText.className = 'encourage-text';
-            encourageText.textContent = this.getRandomEncourageMessage();
+            encourageText.innerHTML = this.getRandomEncourageMessage();
 
             encourageContainer.appendChild(encourageText);
 
