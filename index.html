@@ -232,17 +232,24 @@
             <!-- 操作說明 -->
             <div id="battle-controls-help">
                 <div class="controls-player">
-                    <strong>玩家 1</strong>
-                    <span>移動: A/D | 旋轉: W/Z | 下降: S | 硬降: Space</span>
-                    <span>Hold: C | 道具: 1/2/3</span>
+                    <strong>🎮 玩家 1 (左手)</strong>
+                    <span>移動: A/D | 軟降: S | 硬降: Space</span>
+                    <span>旋轉: W/X (順) Z (逆) | Hold: C</span>
+                    <span>道具: 1 / 2 / 3</span>
                 </div>
                 <div class="controls-player">
-                    <strong>玩家 2</strong>
-                    <span>移動: ←/→ | 旋轉: ↑// | 下降: ↓ | 硬降: Enter</span>
-                    <span>Hold: 右Shift 或 . | 道具: [/]/\</span>
+                    <strong>🎮 玩家 2 (右手)</strong>
+                    <span>移動: ←/→ | 軟降: ↓ | 硬降: Enter</span>
+                    <span>旋轉: ↑ (順) / (逆) | Hold: 右Shift 或 .</span>
+                    <span>道具: 7 / 8 / 9</span>
+                </div>
+                <div class="controls-items">
+                    <strong>📦 道具效果</strong>
+                    <span>💣炸彈: 清除周圍 | ⚡消行: 清底行 | 🔄變形: 變I型</span>
+                    <span>❄️凍結: <em>凍結對手5秒!</em> | 🔨破壞鎚: 清障礙</span>
                 </div>
                 <div class="controls-global">
-                    <span>暫停: P | 返回選單: R</span>
+                    <span>暫停: P | 返回: R</span>
                 </div>
             </div>
 
@@ -354,17 +361,17 @@
                                 <h4>道具</h4>
                                 <div class="player-item-slots" id="p2-item-slots">
                                     <div class="item-slot" data-slot="1">
-                                        <span class="item-key">[</span>
+                                        <span class="item-key">7</span>
                                         <span class="item-icon"></span>
                                         <span class="item-timer"></span>
                                     </div>
                                     <div class="item-slot" data-slot="2">
-                                        <span class="item-key">]</span>
+                                        <span class="item-key">8</span>
                                         <span class="item-icon"></span>
                                         <span class="item-timer"></span>
                                     </div>
                                     <div class="item-slot" data-slot="3">
-                                        <span class="item-key">\</span>
+                                        <span class="item-key">9</span>
                                         <span class="item-icon"></span>
                                         <span class="item-timer"></span>
                                     </div>
@@ -554,11 +561,11 @@
 
     // 道具定義（含時限：常見道具 45 秒，稀有道具 60 秒）
     const GOOD_ITEMS = {
-        bomb: { name: '炸彈', icon: '💣', description: '清除周圍 3×3 範圍', duration: 45000, rarity: 'common' },
-        lineClear: { name: '消行器', icon: '⚡', description: '清除最底下 1 行', duration: 45000, rarity: 'common' },
-        freeze: { name: '時間凍結', icon: '❄️', description: '暫停下落 5 秒', duration: 60000, rarity: 'rare' },
-        transform: { name: '變形器', icon: '🔄', description: '變成 I 型', duration: 60000, rarity: 'rare' },
-        hammer: { name: '破壞鎚', icon: '🔨', description: '清除所有障礙物', duration: 60000, rarity: 'rare' }
+        bomb: { name: '炸彈', icon: '💣', description: '清除周圍 3×3 範圍', duration: 45000, rarity: 'common', target: 'self' },
+        lineClear: { name: '消行器', icon: '⚡', description: '清除最底下 1 行', duration: 45000, rarity: 'common', target: 'self' },
+        freeze: { name: '時間凍結', icon: '❄️', description: '對戰：凍結對手 5 秒', duration: 60000, rarity: 'rare', target: 'opponent' },
+        transform: { name: '變形器', icon: '🔄', description: '變成 I 型方塊', duration: 60000, rarity: 'rare', target: 'self' },
+        hammer: { name: '破壞鎚', icon: '🔨', description: '清除所有障礙物', duration: 60000, rarity: 'rare', target: 'self' }
     };
 
     const BAD_ITEMS = {
@@ -665,9 +672,9 @@
             ROTATE_CW: ['ArrowUp'],
             ROTATE_CCW: ['Slash'],
             HOLD: ['ShiftRight', 'Period'],
-            ITEM_1: ['Numpad1', 'BracketLeft'],
-            ITEM_2: ['Numpad2', 'BracketRight'],
-            ITEM_3: ['Numpad3', 'Backslash']
+            ITEM_1: ['Digit7', 'Numpad7'],
+            ITEM_2: ['Digit8', 'Numpad8'],
+            ITEM_3: ['Digit9', 'Numpad9']
         }
     };
 
