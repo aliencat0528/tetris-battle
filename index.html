@@ -49,14 +49,17 @@
                         <div class="item-slot" data-slot="1">
                             <span class="item-key">1</span>
                             <span class="item-icon"></span>
+                            <span class="item-timer"></span>
                         </div>
                         <div class="item-slot" data-slot="2">
                             <span class="item-key">2</span>
                             <span class="item-icon"></span>
+                            <span class="item-timer"></span>
                         </div>
                         <div class="item-slot" data-slot="3">
                             <span class="item-key">3</span>
                             <span class="item-icon"></span>
+                            <span class="item-timer"></span>
                         </div>
                     </div>
                     <p class="hint">按 1-3 使用</p>
@@ -118,6 +121,79 @@
                 <div id="debuff-section" class="hidden">
                     <h3>狀態</h3>
                     <div id="active-debuffs"></div>
+                </div>
+            </aside>
+
+            <!-- 說明面板 -->
+            <aside id="help-panel" class="collapsed">
+                <button id="help-toggle" aria-label="展開說明">
+                    <span class="toggle-icon">?</span>
+                    <span class="toggle-text">說明</span>
+                </button>
+                <div id="help-content">
+                    <div class="help-section">
+                        <h4>遊戲玩法</h4>
+                        <ul>
+                            <li>控制方塊填滿整行來消除</li>
+                            <li>每關有不同的消行目標</li>
+                            <li>方塊觸底後有短暫延遲可調整</li>
+                            <li>消除多行可獲得更高分數</li>
+                            <li>連續消行會觸發連擊加成</li>
+                        </ul>
+                    </div>
+                    <div class="help-section">
+                        <h4>按鍵控制</h4>
+                        <div class="key-grid">
+                            <div class="key-item"><span class="key">←</span><span class="key">A</span> 左移</div>
+                            <div class="key-item"><span class="key">→</span><span class="key">D</span> 右移</div>
+                            <div class="key-item"><span class="key">↓</span><span class="key">S</span> 快降</div>
+                            <div class="key-item"><span class="key">↑</span><span class="key">W</span> 旋轉</div>
+                            <div class="key-item"><span class="key">Z</span> 逆時針旋轉</div>
+                            <div class="key-item"><span class="key">空白鍵</span> 瞬降</div>
+                            <div class="key-item"><span class="key">C</span><span class="key">Shift</span> Hold</div>
+                            <div class="key-item"><span class="key">1</span><span class="key">2</span><span class="key">3</span> 使用道具</div>
+                            <div class="key-item"><span class="key">P</span><span class="key">Esc</span> 暫停</div>
+                            <div class="key-item"><span class="key">R</span> 重新開始</div>
+                        </div>
+                    </div>
+                    <div class="help-section">
+                        <h4>Hold 系統</h4>
+                        <ul>
+                            <li><strong>Hold 空時</strong>：存入當前方塊</li>
+                            <li><strong>Hold 有方塊</strong>：取出使用，Hold 清空</li>
+                            <li>每個方塊落地前只能用一次</li>
+                        </ul>
+                    </div>
+                    <div class="help-section">
+                        <h4>有利道具 <span class="item-hint">（綠色發光方塊）</span></h4>
+                        <div class="item-list">
+                            <div class="item-entry">💣 <strong>炸彈</strong>：清除周圍 3×3 (45秒)</div>
+                            <div class="item-entry">⚡ <strong>消行器</strong>：清除最底行 (45秒)</div>
+                            <div class="item-entry">❄️ <strong>凍結</strong>：暫停下落 5 秒 (60秒)</div>
+                            <div class="item-entry">🔄 <strong>變形器</strong>：變成 I 型 (60秒)</div>
+                            <div class="item-entry">🔨 <strong>破壞鎚</strong>：清除所有障礙物 (60秒)</div>
+                        </div>
+                        <p class="item-note">放置發光方塊後獲得，按 1-3 使用<br>括號內為道具保存時限</p>
+                    </div>
+                    <div class="help-section">
+                        <h4>出局道具 <span class="item-hint bad">（紅色發光方塊）</span></h4>
+                        <div class="item-list bad">
+                            <div class="item-entry">⬇️ <strong>加速</strong>：下落速度加倍 10 秒</div>
+                            <div class="item-entry">🌫️ <strong>迷霧</strong>：遮擋上半視野 8 秒</div>
+                            <div class="item-entry">↔️ <strong>反轉</strong>：按 ← 會向右移，按 → 會向左移 8 秒</div>
+                            <div class="item-entry">👻 <strong>無預覽</strong>：隱藏落點預覽 8 秒</div>
+                            <div class="item-entry">🌀 <strong>混亂</strong>：方塊會自動隨機左右移動 6 秒</div>
+                        </div>
+                        <p class="item-note bad">碰觸紅色方塊後立即觸發，無法避免！<br>關卡 5 開始出現</p>
+                    </div>
+                    <div class="help-section">
+                        <h4>障礙物</h4>
+                        <ul>
+                            <li>灰色石頭，關卡 3 開始出現</li>
+                            <li>可被完整行消除一起清除</li>
+                            <li>使用破壞鎚可全部清除</li>
+                        </ul>
+                    </div>
                 </div>
             </aside>
         </main>
@@ -250,7 +326,9 @@
     const BAD_ITEMS = {
         speedUp: { name: '加速', icon: '⬇️', description: '下落速度加倍 10 秒', duration: 10000 },
         fog: { name: '迷霧', icon: '🌫️', description: '遮擋部分視野 8 秒', duration: 8000 },
-        reverse: { name: '反轉', icon: '↔️', description: '左右控制反轉 8 秒', duration: 8000 }
+        reverse: { name: '反轉', icon: '↔️', description: '左右控制反轉 8 秒', duration: 8000 },
+        noGhost: { name: '無預覽', icon: '👻', description: '隱藏落點預覽 8 秒', duration: 8000 },
+        chaos: { name: '混亂', icon: '🌀', description: '方塊隨機自動移動 6 秒', duration: 6000 }
     };
 
     const MAX_ITEM_SLOTS = 3;
@@ -764,6 +842,7 @@
             slots.forEach((slot, i) => {
                 const slotEl = this.itemSlots[i];
                 const iconEl = slotEl.querySelector('.item-icon');
+                const timerEl = slotEl.querySelector('.item-timer');
 
                 if (slot && slot.type && GOOD_ITEMS[slot.type]) {
                     const itemInfo = GOOD_ITEMS[slot.type];
@@ -773,19 +852,24 @@
                     // 顯示剩餘時間
                     if (itemManager) {
                         const remaining = Math.ceil(itemManager.getItemTimeRemaining(i) / 1000);
-                        slotEl.title = `${itemInfo.description} (${remaining}秒)`;
+                        slotEl.title = `${itemInfo.name}：${itemInfo.description}`;
+                        timerEl.textContent = remaining + 's';
 
                         // 時間少於 10 秒時閃爍警告
                         if (remaining <= 10) {
                             slotEl.classList.add('item-expiring');
+                            timerEl.classList.add('expiring');
                         } else {
                             slotEl.classList.remove('item-expiring');
+                            timerEl.classList.remove('expiring');
                         }
                     } else {
                         slotEl.title = itemInfo.description;
+                        timerEl.textContent = '';
                     }
                 } else {
                     iconEl.textContent = '';
+                    timerEl.textContent = '';
                     slotEl.classList.remove('has-item', 'item-expiring');
                     slotEl.title = '';
                 }
@@ -1249,6 +1333,10 @@
             this.isFrozen = false;
             this.freezeEndTime = 0;
 
+            // 混亂效果
+            this.lastChaosTime = 0;
+            this.chaosInterval = 300; // 每 300ms 隨機移動一次
+
             // 道具方塊標記
             this.currentPieceHasItem = false;
             this.currentItemType = null;
@@ -1342,6 +1430,15 @@
 
             if (!this.currentPiece) return;
 
+            // 混亂效果：隨機移動方塊
+            if (this.itemManager.hasDebuff('chaos') && time - this.lastChaosTime >= this.chaosInterval) {
+                const direction = Math.random() < 0.5 ? -1 : 1;
+                if (!this.board.collides(this.currentPiece, direction, 0)) {
+                    this.currentPiece.move(direction, 0);
+                }
+                this.lastChaosTime = time;
+            }
+
             // 檢查時間限制
             if (this.stageManager.hasTimeLimit() && !this.isFrozen) {
                 const elapsed = time - this.pieceSpawnTime;
@@ -1376,7 +1473,11 @@
         }
 
         render() {
-            const ghostY = this.currentPiece ? this.board.getGhostY(this.currentPiece) : 0;
+            let ghostY = this.currentPiece ? this.board.getGhostY(this.currentPiece) : 0;
+            // 無預覽 debuff：隱藏 ghost piece
+            if (this.itemManager.hasDebuff('noGhost')) {
+                ghostY = this.currentPiece ? this.currentPiece.y : 0; // 設為當前位置，不會顯示
+            }
             const hasFog = this.itemManager.hasDebuff('fog');
             this.renderer.render(this.board, this.currentPiece, ghostY, this.holdPiece, this.canHold, this.nextPieces, hasFog);
             this.renderer.updateDebuffs(this.itemManager.getActiveDebuffs());
@@ -1742,6 +1843,17 @@
     // ============== Initialize ==============
     document.addEventListener('DOMContentLoaded', () => {
         window.tetrisGame = new Game();
+
+        // 說明面板展開/收合
+        const helpPanel = document.getElementById('help-panel');
+        const helpToggle = document.getElementById('help-toggle');
+
+        helpToggle.addEventListener('click', () => {
+            helpPanel.classList.toggle('collapsed');
+            const isCollapsed = helpPanel.classList.contains('collapsed');
+            helpToggle.setAttribute('aria-label', isCollapsed ? '展開說明' : '收合說明');
+        });
+
         console.log('Tetris ready! Press Enter to start.');
     });
     </script>

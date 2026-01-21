@@ -193,12 +193,12 @@ header h1 {
 .item-slot {
     display: flex;
     align-items: center;
-    gap: 8px;
-    width: 80px;
-    height: 36px;
+    gap: 4px;
+    width: 90px;
+    height: 40px;
     background: rgba(0, 0, 0, 0.3);
     border-radius: 5px;
-    padding: 5px 10px;
+    padding: 5px 8px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     transition: all 0.2s ease;
 }
@@ -209,18 +209,30 @@ header h1 {
 }
 
 .item-key {
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     font-weight: bold;
     color: rgba(255, 255, 255, 0.5);
     background: rgba(255, 255, 255, 0.1);
-    padding: 2px 6px;
+    padding: 2px 5px;
     border-radius: 3px;
 }
 
 .item-icon {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     flex: 1;
     text-align: center;
+}
+
+.item-timer {
+    font-size: 0.65rem;
+    color: #00ff88;
+    min-width: 20px;
+    text-align: right;
+}
+
+.item-timer.expiring {
+    color: #ff4444;
+    animation: itemExpiring 0.5s ease-in-out infinite;
 }
 
 /* 道具即將過期閃爍 */
@@ -518,6 +530,187 @@ header h1 {
     margin-top: 20px;
     font-size: 0.75rem;
     color: rgba(255, 255, 255, 0.4);
+}
+
+/* Help Panel */
+#help-panel {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    max-width: 280px;
+}
+
+#help-panel.collapsed {
+    width: 50px;
+    height: auto;
+}
+
+#help-panel.collapsed #help-content {
+    display: none;
+}
+
+#help-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 15px;
+    background: rgba(0, 212, 255, 0.15);
+    border: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    color: #00d4ff;
+    cursor: pointer;
+    font-size: 0.9rem;
+    text-align: left;
+    transition: background 0.2s;
+}
+
+#help-toggle:hover {
+    background: rgba(0, 212, 255, 0.25);
+}
+
+.toggle-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: rgba(0, 212, 255, 0.3);
+    border-radius: 50%;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+#help-panel.collapsed .toggle-text {
+    display: none;
+}
+
+#help-content {
+    padding: 15px;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+#help-content::-webkit-scrollbar {
+    width: 5px;
+}
+
+#help-content::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+#help-content::-webkit-scrollbar-thumb {
+    background: rgba(0, 212, 255, 0.3);
+    border-radius: 3px;
+}
+
+.help-section {
+    margin-bottom: 15px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.help-section:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.help-section h4 {
+    font-size: 0.85rem;
+    color: #00d4ff;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.help-section ul {
+    list-style: none;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.6;
+}
+
+.help-section ul li {
+    padding: 2px 0;
+    padding-left: 12px;
+    position: relative;
+}
+
+.help-section ul li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: #00d4ff;
+}
+
+.key-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.7rem;
+}
+
+.key-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.key {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.65rem;
+    color: #ffd700;
+    min-width: 18px;
+    text-align: center;
+}
+
+.item-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.item-entry {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.85);
+    padding: 3px 5px;
+    background: rgba(0, 255, 136, 0.08);
+    border-radius: 3px;
+}
+
+.item-list.bad .item-entry {
+    background: rgba(255, 68, 68, 0.1);
+}
+
+.item-hint {
+    font-size: 0.7rem;
+    font-weight: normal;
+    color: #00ff88;
+}
+
+.item-hint.bad {
+    color: #ff6b6b;
+}
+
+.item-note {
+    font-size: 0.65rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin-top: 6px;
+    line-height: 1.5;
+}
+
+.item-note.bad {
+    color: rgba(255, 100, 100, 0.7);
 }
 
 /* Responsive */
