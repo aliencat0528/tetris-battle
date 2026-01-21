@@ -1556,8 +1556,16 @@
             this.cb = cb;
             this.keys = {};
             this.repeatTimers = {};
-            document.addEventListener('keydown', e => this.onKeyDown(e));
-            document.addEventListener('keyup', e => this.onKeyUp(e));
+            this.boundKeyDown = e => this.onKeyDown(e);
+            this.boundKeyUp = e => this.onKeyUp(e);
+            document.addEventListener('keydown', this.boundKeyDown);
+            document.addEventListener('keyup', this.boundKeyUp);
+        }
+
+        destroy() {
+            document.removeEventListener('keydown', this.boundKeyDown);
+            document.removeEventListener('keyup', this.boundKeyUp);
+            this.stopAllRepeats();
         }
 
         onKeyDown(e) {
@@ -2159,6 +2167,12 @@
             msg += '\n按 Enter 重新開始';
             this.renderer.showOverlay('恭喜通關！', msg, r.scores);
         }
+
+        destroy() {
+            this.inputHandler.destroy();
+            this.itemManager.clearAllDebuffs();
+            if (this.animationId) { cancelAnimationFrame(this.animationId); this.animationId = null; }
+        }
     }
 
     // ============== Battle Mode Classes ==============
@@ -2461,8 +2475,16 @@
             this.keys = {};
             this.repeatTimers = {};
 
-            document.addEventListener('keydown', e => this.onKeyDown(e));
-            document.addEventListener('keyup', e => this.onKeyUp(e));
+            this.boundKeyDown = e => this.onKeyDown(e);
+            this.boundKeyUp = e => this.onKeyUp(e);
+            document.addEventListener('keydown', this.boundKeyDown);
+            document.addEventListener('keyup', this.boundKeyUp);
+        }
+
+        destroy() {
+            document.removeEventListener('keydown', this.boundKeyDown);
+            document.removeEventListener('keyup', this.boundKeyUp);
+            this.stopAllRepeats();
         }
 
         onKeyDown(e) {
@@ -3126,11 +3148,8 @@
         }
 
         restart() {
-            this.inputHandler.stopAllRepeats();
-            if (this.animationId) {
-                cancelAnimationFrame(this.animationId);
-                this.animationId = null;
-            }
+            this.destroy();
+            window.battleGame = null;
             // Return to mode selection
             document.getElementById('battle-container').classList.add('hidden');
             document.getElementById('mode-selection').classList.remove('hidden');
@@ -3177,6 +3196,14 @@
             };
             document.addEventListener('keydown', handleEnter);
         }
+
+        destroy() {
+            this.inputHandler.destroy();
+            if (this.animationId) {
+                cancelAnimationFrame(this.animationId);
+                this.animationId = null;
+            }
+        }
     }
 
     // ============== Initialize ==============
@@ -3204,6 +3231,16 @@
     }
 
     function selectMode(mode) {
+        // Destroy any existing game instances to remove event listeners
+        if (window.tetrisGame) {
+            window.tetrisGame.destroy();
+            window.tetrisGame = null;
+        }
+        if (window.battleGame) {
+            window.battleGame.destroy();
+            window.battleGame = null;
+        }
+
         currentGameMode = mode;
         const modeSelection = document.getElementById('mode-selection');
         const singlePlayerContainer = document.getElementById('single-player-container');
@@ -3221,13 +3258,11 @@
             // Battle mode
             singlePlayerContainer.classList.add('hidden');
             battleContainer.classList.remove('hidden');
-            // Initialize battle mode (BattleGame will be implemented in next phase)
             initBattleMode();
             console.log('Battle mode started');
         }
     }
 
-    // Placeholder for battle mode initialization
     function initBattleMode() {
         // Create and start the battle game
         window.battleGame = new BattleGame();
