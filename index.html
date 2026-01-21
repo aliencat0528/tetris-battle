@@ -229,6 +229,23 @@
                 <span id="battle-time-remaining">3:00</span>
             </div>
 
+            <!-- 操作說明 -->
+            <div id="battle-controls-help">
+                <div class="controls-player">
+                    <strong>玩家 1</strong>
+                    <span>移動: A/D | 旋轉: W/Z | 下降: S | 硬降: Space</span>
+                    <span>Hold: C | 道具: 1/2/3</span>
+                </div>
+                <div class="controls-player">
+                    <strong>玩家 2</strong>
+                    <span>移動: ←/→ | 旋轉: ↑// | 下降: ↓ | 硬降: Enter</span>
+                    <span>Hold: 右Shift 或 . | 道具: [/]/\</span>
+                </div>
+                <div class="controls-global">
+                    <span>暫停: P | 返回選單: R</span>
+                </div>
+            </div>
+
             <div id="battle-area">
                 <!-- 玩家 1 (左側) -->
                 <div class="player-area" id="player1-area">
@@ -337,17 +354,17 @@
                                 <h4>道具</h4>
                                 <div class="player-item-slots" id="p2-item-slots">
                                     <div class="item-slot" data-slot="1">
-                                        <span class="item-key">7</span>
+                                        <span class="item-key">[</span>
                                         <span class="item-icon"></span>
                                         <span class="item-timer"></span>
                                     </div>
                                     <div class="item-slot" data-slot="2">
-                                        <span class="item-key">8</span>
+                                        <span class="item-key">]</span>
                                         <span class="item-icon"></span>
                                         <span class="item-timer"></span>
                                     </div>
                                     <div class="item-slot" data-slot="3">
-                                        <span class="item-key">9</span>
+                                        <span class="item-key">\</span>
                                         <span class="item-icon"></span>
                                         <span class="item-timer"></span>
                                     </div>
@@ -647,10 +664,10 @@
             HARD_DROP: ['Enter'],
             ROTATE_CW: ['ArrowUp'],
             ROTATE_CCW: ['Slash'],
-            HOLD: ['ShiftRight'],
-            ITEM_1: ['Numpad7', 'Digit7'],
-            ITEM_2: ['Numpad8', 'Digit8'],
-            ITEM_3: ['Numpad9', 'Digit9']
+            HOLD: ['ShiftRight', 'Period'],
+            ITEM_1: ['Numpad1', 'BracketLeft'],
+            ITEM_2: ['Numpad2', 'BracketRight'],
+            ITEM_3: ['Numpad3', 'Backslash']
         }
     };
 
@@ -2844,8 +2861,12 @@
             const item = this.itemManager.useItem(slotIndex);
             if (!item) return;
 
+            // Get opponent for attack items
+            const opponent = this.battleGame.getOpponent(this.playerId);
+
             switch (item) {
                 case 'bomb':
+                    // Bomb clears area around YOUR current piece (helps yourself)
                     if (this.currentPiece) {
                         const cx = this.currentPiece.x + 1;
                         const cy = this.currentPiece.y + 1;
@@ -2853,13 +2874,19 @@
                     }
                     break;
                 case 'lineClear':
+                    // Clear YOUR bottom line (helps yourself)
                     this.board.clearBottomLine();
                     break;
                 case 'freeze':
-                    this.isFrozen = true;
-                    this.freezeEndTime = performance.now() + 5000;
+                    // Freeze OPPONENT for 5 seconds (attacks opponent)
+                    if (opponent) {
+                        opponent.isFrozen = true;
+                        opponent.freezeEndTime = performance.now() + 5000;
+                        opponent.renderer.showEffect('debuff', '被凍結！');
+                    }
                     break;
                 case 'transform':
+                    // Transform YOUR piece to I-piece (helps yourself)
                     if (this.currentPiece) {
                         const x = this.currentPiece.x;
                         const y = this.currentPiece.y;
@@ -2871,6 +2898,7 @@
                     }
                     break;
                 case 'hammer':
+                    // Clear YOUR obstacles (helps yourself)
                     this.board.clearObstacles();
                     break;
             }
@@ -3049,6 +3077,10 @@
         player2Input(action, ...args) {
             if (this.state !== GAME_STATE.PLAYING) return;
             this.player2[action](...args);
+        }
+
+        getOpponent(playerId) {
+            return playerId === 1 ? this.player2 : this.player1;
         }
 
         start() {
