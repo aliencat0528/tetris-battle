@@ -291,28 +291,50 @@ class EffectsManager {
         }
     }
 
-    // 創建泡泡（放大版）
+    // 創建泡泡（多方向擴散版）
     createBubble() {
         if (this.bubbleCount >= this.maxBubbles) return;
 
         const bubble = document.createElement('div');
-        bubble.className = 'bubble';
+
+        // 隨機選擇方向：0=底部往上, 1=頂部往下, 2=左側往右, 3=右側往左
+        const direction = Math.floor(Math.random() * 4);
+        const directionClasses = ['bubble', 'bubble bubble-from-top', 'bubble bubble-from-left', 'bubble bubble-from-right'];
+        bubble.className = directionClasses[direction];
 
         // 根據主題獲取尺寸
         const sizeConfig = this.bubbleSizes[this.currentTheme] || this.bubbleSizes.bubble;
         const size = Math.random() * (sizeConfig.max - sizeConfig.min) + sizeConfig.min;
 
-        const left = Math.random() * 100;
-        const duration = Math.random() * 12 + 18; // 18-30s (更慢，更明顯)
+        const duration = Math.random() * 12 + 18; // 18-30s
         const drift = (Math.random() - 0.5) * 150;
 
-        // 搖擺動畫時長（3-6秒，較大泡泡搖擺較慢）
+        // 搖擺動畫時長（3-6秒）
         const wobbleDuration = 3 + (size / sizeConfig.max) * 3;
 
         bubble.style.width = `${size}px`;
         bubble.style.height = `${size}px`;
-        bubble.style.left = `${left}%`;
-        bubble.style.bottom = '-150px';
+
+        // 根據方向設置起始位置
+        switch (direction) {
+            case 0: // 底部往上
+                bubble.style.left = `${Math.random() * 100}%`;
+                bubble.style.bottom = '-150px';
+                break;
+            case 1: // 頂部往下
+                bubble.style.left = `${Math.random() * 100}%`;
+                bubble.style.top = '-150px';
+                break;
+            case 2: // 左側往右
+                bubble.style.left = '-150px';
+                bubble.style.top = `${Math.random() * 100}%`;
+                break;
+            case 3: // 右側往左
+                bubble.style.right = '-150px';
+                bubble.style.top = `${Math.random() * 100}%`;
+                break;
+        }
+
         bubble.style.animationDuration = `${duration}s, ${wobbleDuration}s`;
         bubble.style.setProperty('--drift', `${drift}px`);
 
