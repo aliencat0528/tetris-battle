@@ -800,6 +800,412 @@ header h1 {
     color: rgba(255, 100, 100, 0.7);
 }
 
+/* Single Player Container */
+#single-player-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#single-player-container.hidden {
+    display: none;
+}
+
+/* Battle Mode Styles */
+#battle-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 1400px;
+}
+
+#battle-container.hidden {
+    display: none;
+}
+
+/* Battle Timer */
+#battle-timer {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 30px;
+    background: rgba(255, 215, 0, 0.1);
+    border: 2px solid rgba(255, 215, 0, 0.3);
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.timer-label {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+#battle-time-remaining {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #ffd700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    min-width: 80px;
+    text-align: center;
+}
+
+#battle-time-remaining.warning {
+    color: #ff4444;
+    animation: timerPulse 0.5s ease-in-out infinite;
+}
+
+@keyframes timerPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+/* Battle Area */
+#battle-area {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+/* VS Sign */
+#battle-vs {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #ff4444;
+    text-shadow: 0 0 20px rgba(255, 68, 68, 0.5);
+    animation: vsPulse 2s ease-in-out infinite;
+}
+
+@keyframes vsPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.1); }
+}
+
+/* Player Area */
+.player-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 15px;
+    padding: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.player-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 10px 15px;
+    background: rgba(0, 212, 255, 0.1);
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.player-name {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #00d4ff;
+}
+
+.player-stats-header {
+    display: flex;
+    gap: 20px;
+}
+
+.ko-display, .lines-sent-display {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.ko-display span, .lines-sent-display span {
+    color: #ffd700;
+    font-weight: bold;
+}
+
+/* Player Game Area */
+.player-game-area {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+/* Player Left Section (Hold + Items) */
+.player-left-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 80px;
+}
+
+.player-hold-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.player-hold-section h4,
+.player-items-section h4,
+.player-next-section h4 {
+    font-size: 0.75rem;
+    letter-spacing: 0.1rem;
+    margin-bottom: 8px;
+    color: #00d4ff;
+}
+
+.player-hold-section canvas {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+}
+
+/* Player Items Section */
+.player-items-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.player-item-slots {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.player-item-slots .item-slot {
+    width: 70px;
+    height: 32px;
+    font-size: 0.8rem;
+}
+
+/* Pending Garbage Indicator */
+.pending-garbage {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px;
+    background: rgba(255, 68, 68, 0.1);
+    border-radius: 5px;
+    border: 1px solid rgba(255, 68, 68, 0.3);
+}
+
+.garbage-bar {
+    width: 50px;
+    height: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+}
+
+.garbage-bar::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #ff4444, #ff6b6b);
+    transition: width 0.3s ease;
+}
+
+.garbage-count {
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: #ff4444;
+    min-width: 20px;
+    text-align: center;
+}
+
+/* Player Board Section */
+.player-board-section {
+    position: relative;
+}
+
+.player-board-section canvas {
+    background: rgba(0, 0, 0, 0.5);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 5px;
+}
+
+.player-board-section .effect-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 5;
+}
+
+.player-board-section .combo-display,
+.player-board-section .clear-type-display {
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-shadow: 0 0 15px currentColor;
+    opacity: 0;
+    transform: scale(0.5);
+}
+
+/* Player Right Section (Next + Stats) */
+.player-right-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 70px;
+}
+
+.player-next-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.player-next-section canvas {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    margin-bottom: 5px;
+}
+
+.player-next-section canvas:last-child {
+    margin-bottom: 0;
+}
+
+.player-stats-section {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.player-stats-section .stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.player-stats-section .stat-item:last-child {
+    border-bottom: none;
+}
+
+.player-stats-section .stat-label {
+    font-size: 0.7rem;
+}
+
+.player-stats-section .stat-value {
+    font-size: 0.9rem;
+    min-width: 40px;
+}
+
+/* Battle Overlay */
+#battle-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+#battle-overlay.hidden {
+    display: none;
+}
+
+#battle-overlay-content {
+    text-align: center;
+    padding: 40px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    border: 2px solid rgba(255, 215, 0, 0.3);
+}
+
+#battle-result-title {
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+    background: linear-gradient(90deg, #ffd700, #ff6b6b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+#battle-result-details {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.result-player {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 20px;
+    background: rgba(0, 212, 255, 0.1);
+    border-radius: 10px;
+    min-width: 150px;
+}
+
+.result-name {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #00d4ff;
+}
+
+.result-ko, .result-lines {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.result-ko span, .result-lines span {
+    color: #ffd700;
+    font-weight: bold;
+}
+
+.result-vs {
+    font-size: 1.5rem;
+    color: #ff4444;
+    font-weight: bold;
+}
+
+#battle-winner-text {
+    font-size: 1.8rem;
+    color: #ffd700;
+    margin-bottom: 20px;
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+}
+
+.battle-restart-hint {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.6);
+    animation: blink 1.5s infinite;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     header h1 {
