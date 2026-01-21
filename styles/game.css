@@ -1738,6 +1738,128 @@ body:not(.theme-candy):not(.theme-space) #board-section::before {
     50% { background-position: 100% 50%; }
 }
 
+/* 泡泡主題 - 關卡資訊區高對比 */
+body.theme-bubble #stage-info,
+body:not(.theme-candy):not(.theme-space) #stage-info {
+    background: rgba(255, 255, 255, 0.85);
+    border: 2px solid rgba(200, 160, 220, 0.5);
+    box-shadow: 0 4px 20px rgba(160, 120, 200, 0.3);
+}
+
+body.theme-bubble #stage-display,
+body:not(.theme-candy):not(.theme-space) #stage-display {
+    color: #4a3a6a;
+}
+
+body.theme-bubble .stage-label,
+body:not(.theme-candy):not(.theme-space) .stage-label {
+    color: #6a5a8a;
+    font-weight: 600;
+}
+
+body.theme-bubble #stage-number,
+body:not(.theme-candy):not(.theme-space) #stage-number {
+    color: #8060c0;
+    text-shadow: 0 0 10px rgba(128, 96, 192, 0.5);
+}
+
+body.theme-bubble #mission-text,
+body:not(.theme-candy):not(.theme-space) #mission-text {
+    color: #5a4a7a;
+}
+
+body.theme-bubble #progress-text,
+body:not(.theme-candy):not(.theme-space) #progress-text {
+    color: #4a3a6a;
+    font-weight: 600;
+}
+
+/* 泡泡主題 - 說明面板高對比 */
+body.theme-bubble #help-panel,
+body:not(.theme-candy):not(.theme-space) #help-panel {
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid rgba(200, 160, 220, 0.4);
+    box-shadow: 0 4px 20px rgba(160, 120, 200, 0.25);
+}
+
+body.theme-bubble #help-panel h4,
+body:not(.theme-candy):not(.theme-space) #help-panel h4 {
+    color: #6050a0;
+    border-bottom-color: rgba(160, 120, 200, 0.3);
+}
+
+body.theme-bubble #help-panel li,
+body.theme-bubble #help-panel p,
+body.theme-bubble .item-entry,
+body:not(.theme-candy):not(.theme-space) #help-panel li,
+body:not(.theme-candy):not(.theme-space) #help-panel p,
+body:not(.theme-candy):not(.theme-space) .item-entry {
+    color: #4a4a6a;
+}
+
+body.theme-bubble .key,
+body:not(.theme-candy):not(.theme-space) .key {
+    background: rgba(128, 96, 192, 0.15);
+    border-color: rgba(128, 96, 192, 0.3);
+    color: #5a4a8a;
+}
+
+body.theme-bubble #help-toggle,
+body:not(.theme-candy):not(.theme-space) #help-toggle {
+    background: rgba(200, 160, 220, 0.2);
+    color: #6050a0;
+}
+
+body.theme-bubble #help-toggle:hover,
+body:not(.theme-candy):not(.theme-space) #help-toggle:hover {
+    background: rgba(200, 160, 220, 0.4);
+}
+
+/* 泡泡主題 - Hold/Next/道具區高對比 */
+body.theme-bubble #hold-section,
+body.theme-bubble #next-section,
+body.theme-bubble #items-section,
+body:not(.theme-candy):not(.theme-space) #hold-section,
+body:not(.theme-candy):not(.theme-space) #next-section,
+body:not(.theme-candy):not(.theme-space) #items-section {
+    background: rgba(255, 255, 255, 0.85);
+    border: 2px solid rgba(200, 160, 220, 0.4);
+}
+
+body.theme-bubble .hint,
+body:not(.theme-candy):not(.theme-space) .hint {
+    color: #6a6a8a;
+}
+
+/* 泡泡主題 - 分數區高對比 */
+body.theme-bubble #stats-section,
+body:not(.theme-candy):not(.theme-space) #stats-section {
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 10px;
+    padding: 10px;
+    border: 2px solid rgba(200, 160, 220, 0.4);
+}
+
+/* 泡泡主題 - 道具欄高對比 */
+body.theme-bubble .item-slot,
+body:not(.theme-candy):not(.theme-space) .item-slot {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(160, 120, 200, 0.4);
+}
+
+body.theme-bubble .item-slot.has-item,
+body:not(.theme-candy):not(.theme-space) .item-slot.has-item {
+    background: rgba(255, 255, 255, 0.95);
+    border-color: rgba(128, 96, 192, 0.6);
+    box-shadow: 0 0 15px rgba(128, 96, 192, 0.3);
+}
+
+/* 泡泡主題 - Canvas 保持原色（不受濾鏡影響） */
+body.theme-bubble canvas,
+body:not(.theme-candy):not(.theme-space) canvas {
+    filter: none !important;
+}
+
 /* 泡泡主題背景 - 高對比光暈層 */
 body.theme-bubble #theme-background,
 body:not(.theme-candy):not(.theme-space) #theme-background {
@@ -1762,7 +1884,7 @@ body:not(.theme-candy):not(.theme-space) #theme-background {
     }
 }
 
-/* 大泡泡樣式 - 高對比夢幻泡泡 */
+/* 大泡泡樣式 - 高對比夢幻泡泡 + 左右搖擺 */
 .bubble {
     position: absolute;
     border-radius: 50%;
@@ -1783,9 +1905,25 @@ body:not(.theme-candy):not(.theme-space) #theme-background {
         0 0 50px rgba(255, 255, 255, 0.7),
         0 0 100px rgba(200, 160, 220, 0.4),
         0 0 150px rgba(160, 210, 240, 0.2);
-    animation: floatBubble linear infinite;
+    animation: floatBubble linear infinite, bubbleWobble ease-in-out infinite;
     opacity: 0;
     backdrop-filter: blur(4px);
+}
+
+/* 泡泡左右搖擺動畫 */
+@keyframes bubbleWobble {
+    0%, 100% {
+        margin-left: 0;
+    }
+    25% {
+        margin-left: 15px;
+    }
+    50% {
+        margin-left: 0;
+    }
+    75% {
+        margin-left: -15px;
+    }
 }
 
 .bubble::before {
@@ -1820,9 +1958,15 @@ body:not(.theme-candy):not(.theme-space) #theme-background {
     8% {
         opacity: 0.95;
     }
+    25% {
+        transform: translateY(75vh) translateX(calc(var(--drift, 50px) * 0.3)) scale(0.7) rotate(90deg);
+    }
     50% {
         transform: translateY(50vh) translateX(var(--drift, 50px)) scale(0.9) rotate(180deg);
         opacity: 1;
+    }
+    75% {
+        transform: translateY(25vh) translateX(calc(var(--drift, 50px) * 1.5)) scale(1.05) rotate(270deg);
     }
     92% {
         opacity: 0.95;

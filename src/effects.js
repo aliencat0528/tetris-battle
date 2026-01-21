@@ -306,11 +306,14 @@ class EffectsManager {
         const duration = Math.random() * 12 + 18; // 18-30s (更慢，更明顯)
         const drift = (Math.random() - 0.5) * 150;
 
+        // 搖擺動畫時長（3-6秒，較大泡泡搖擺較慢）
+        const wobbleDuration = 3 + (size / sizeConfig.max) * 3;
+
         bubble.style.width = `${size}px`;
         bubble.style.height = `${size}px`;
         bubble.style.left = `${left}%`;
         bubble.style.bottom = '-150px';
-        bubble.style.animationDuration = `${duration}s`;
+        bubble.style.animationDuration = `${duration}s, ${wobbleDuration}s`;
         bubble.style.setProperty('--drift', `${drift}px`);
 
         this.backgroundEffects.appendChild(bubble);
