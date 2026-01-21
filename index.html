@@ -12,36 +12,26 @@
         <!-- 泡泡、星星將由 JS 動態生成 -->
     </div>
 
-    <!-- 光暈效果層 -->
-    <div class="glow-orb cyan" style="width: 300px; height: 300px; top: 10%; left: 5%;"></div>
-    <div class="glow-orb purple" style="width: 400px; height: 400px; top: 60%; right: 5%;"></div>
-    <div class="glow-orb pink" style="width: 250px; height: 250px; bottom: 10%; left: 30%;"></div>
-
-    <!-- 角落裝飾 -->
-    <div class="corner-decoration top-left"></div>
-    <div class="corner-decoration top-right"></div>
-    <div class="corner-decoration bottom-left"></div>
-    <div class="corner-decoration bottom-right"></div>
-
-    <!-- 可愛裝飾元素 -->
-    <div id="decorations">
-        <span class="floating-emoji" style="top: 15%; left: 3%;">⭐</span>
-        <span class="floating-emoji" style="top: 25%; right: 5%; animation-delay: 1s;">🌟</span>
-        <span class="floating-emoji" style="top: 70%; left: 2%; animation-delay: 2s;">✨</span>
-        <span class="floating-emoji" style="bottom: 20%; right: 3%; animation-delay: 0.5s;">💫</span>
-        <span class="floating-emoji" style="top: 45%; left: 1%; animation-delay: 1.5s;">🎮</span>
-        <span class="floating-emoji" style="top: 55%; right: 2%; animation-delay: 2.5s;">🎯</span>
-    </div>
+    <!-- 主題背景層 - 由 JS 根據主題動態管理 -->
+    <div id="theme-background"></div>
 
     <!-- 彩紙效果容器 -->
     <div class="confetti-container" id="confetti-container"></div>
 
     <!-- 主題切換器 -->
     <div id="theme-switcher">
-        <span id="theme-label">風格</span>
-        <button class="theme-btn theme-bubble active" data-theme="bubble" title="夢幻泡泡風"></button>
-        <button class="theme-btn theme-candy" data-theme="candy" title="霓虹糖果風"></button>
-        <button class="theme-btn theme-space" data-theme="space" title="太空星際風"></button>
+        <button class="theme-btn active" data-theme="bubble">
+            <span class="theme-icon">🫧</span>
+            <span class="theme-name">夢幻泡泡</span>
+        </button>
+        <button class="theme-btn" data-theme="candy">
+            <span class="theme-icon">🍬</span>
+            <span class="theme-name">霓虹糖果</span>
+        </button>
+        <button class="theme-btn" data-theme="space">
+            <span class="theme-icon">🚀</span>
+            <span class="theme-name">星際太空</span>
+        </button>
     </div>
 
     <div id="game-container">

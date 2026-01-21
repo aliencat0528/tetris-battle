@@ -1460,11 +1460,62 @@ header h1 {
 }
 
 /* ============================================
-   夢幻泡泡風格 - Dreamy Bubble Theme
+   主題切換系統 - Theme Switching System
    ============================================ */
 
-/* 背景效果容器 */
-#background-effects {
+/* 主題切換器 - 顯示風格名稱按鈕 */
+#theme-switcher {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    z-index: 2000;
+    display: flex;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 8px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+}
+
+#theme-switcher .theme-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.85rem;
+}
+
+#theme-switcher .theme-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+#theme-switcher .theme-btn.active {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+    color: #fff;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+}
+
+#theme-switcher .theme-icon {
+    font-size: 1.1rem;
+}
+
+#theme-switcher .theme-name {
+    font-weight: 500;
+}
+
+/* 主題背景層 */
+#theme-background {
     position: fixed;
     top: 0;
     left: 0;
@@ -1475,646 +1526,111 @@ header h1 {
     overflow: hidden;
 }
 
-/* 泡泡樣式 */
+#background-effects {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+}
+
+/* ============================================
+   夢幻泡泡主題 - Dreamy Bubble Theme
+   大泡泡漂浮 + 水波紋漣漪 + 柔和漸層
+   ============================================ */
+
+/* 泡泡主題背景 - 水波紋漣漪效果 */
+body.theme-bubble #theme-background,
+body:not(.theme-candy):not(.theme-space) #theme-background {
+    background:
+        radial-gradient(ellipse 80% 50% at 50% 120%, rgba(0, 212, 255, 0.15), transparent),
+        radial-gradient(ellipse 60% 40% at 20% 80%, rgba(155, 89, 182, 0.1), transparent),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(255, 107, 157, 0.08), transparent);
+    animation: bubbleBackgroundWave 8s ease-in-out infinite;
+}
+
+@keyframes bubbleBackgroundWave {
+    0%, 100% {
+        background-position: 0% 0%, 0% 0%, 0% 0%;
+        filter: hue-rotate(0deg);
+    }
+    50% {
+        background-position: 5% 5%, -5% 5%, 5% -5%;
+        filter: hue-rotate(10deg);
+    }
+}
+
+/* 大泡泡樣式 - 更大更明顯 */
 .bubble {
     position: absolute;
     border-radius: 50%;
     background: radial-gradient(circle at 30% 30%,
-        rgba(255, 255, 255, 0.4),
-        rgba(0, 212, 255, 0.2) 40%,
-        rgba(155, 89, 182, 0.1) 60%,
+        rgba(255, 255, 255, 0.5),
+        rgba(0, 212, 255, 0.25) 40%,
+        rgba(155, 89, 182, 0.15) 60%,
         transparent 70%);
     box-shadow:
-        inset 0 0 20px rgba(255, 255, 255, 0.3),
-        0 0 10px rgba(0, 212, 255, 0.2);
+        inset 0 0 30px rgba(255, 255, 255, 0.4),
+        inset -10px -10px 30px rgba(0, 212, 255, 0.2),
+        0 0 20px rgba(0, 212, 255, 0.3),
+        0 0 40px rgba(155, 89, 182, 0.15);
     animation: floatBubble linear infinite;
     opacity: 0;
+    backdrop-filter: blur(2px);
 }
 
 .bubble::before {
     content: '';
     position: absolute;
-    top: 15%;
-    left: 20%;
-    width: 30%;
-    height: 20%;
-    background: rgba(255, 255, 255, 0.6);
+    top: 12%;
+    left: 18%;
+    width: 35%;
+    height: 25%;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), transparent);
     border-radius: 50%;
     transform: rotate(-40deg);
 }
 
+.bubble::after {
+    content: '';
+    position: absolute;
+    bottom: 20%;
+    right: 20%;
+    width: 15%;
+    height: 10%;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+}
+
 @keyframes floatBubble {
     0% {
-        transform: translateY(100vh) translateX(0) scale(0.5);
+        transform: translateY(100vh) translateX(0) scale(0.3) rotate(0deg);
         opacity: 0;
     }
     10% {
-        opacity: 0.7;
+        opacity: 0.8;
+    }
+    50% {
+        transform: translateY(50vh) translateX(var(--drift, 50px)) scale(0.8) rotate(180deg);
     }
     90% {
-        opacity: 0.7;
-    }
-    100% {
-        transform: translateY(-100px) translateX(var(--drift, 50px)) scale(1);
-        opacity: 0;
-    }
-}
-
-/* 星星粒子樣式 */
-.star {
-    position: absolute;
-    width: 4px;
-    height: 4px;
-    background: #fff;
-    border-radius: 50%;
-    box-shadow:
-        0 0 6px 2px rgba(255, 255, 255, 0.8),
-        0 0 12px 4px rgba(0, 212, 255, 0.5),
-        0 0 20px 6px rgba(155, 89, 182, 0.3);
-    animation: twinkle ease-in-out infinite;
-}
-
-.star.large {
-    width: 6px;
-    height: 6px;
-}
-
-.star::before,
-.star::after {
-    content: '';
-    position: absolute;
-    background: inherit;
-}
-
-.star::before {
-    width: 100%;
-    height: 2px;
-    top: 50%;
-    left: -100%;
-    transform: translateY(-50%);
-    box-shadow: inherit;
-}
-
-.star::after {
-    width: 2px;
-    height: 100%;
-    top: -100%;
-    left: 50%;
-    transform: translateX(-50%);
-    box-shadow: inherit;
-}
-
-@keyframes twinkle {
-    0%, 100% {
-        opacity: 0.3;
-        transform: scale(0.8);
-    }
-    50% {
-        opacity: 1;
-        transform: scale(1.2);
-    }
-}
-
-/* 柔和光暈效果 */
-.glow-orb {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(60px);
-    opacity: 0.3;
-    animation: glowPulse 8s ease-in-out infinite;
-}
-
-.glow-orb.cyan {
-    background: radial-gradient(circle, #00d4ff, transparent 70%);
-}
-
-.glow-orb.purple {
-    background: radial-gradient(circle, #9b59b6, transparent 70%);
-}
-
-.glow-orb.pink {
-    background: radial-gradient(circle, #ff6b9d, transparent 70%);
-}
-
-@keyframes glowPulse {
-    0%, 100% {
-        opacity: 0.2;
-        transform: scale(1);
-    }
-    50% {
-        opacity: 0.4;
-        transform: scale(1.1);
-    }
-}
-
-/* 可愛裝飾元素 */
-#decorations {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 1;
-}
-
-.floating-emoji {
-    position: absolute;
-    font-size: 1.5rem;
-    animation: floatEmoji 6s ease-in-out infinite;
-    opacity: 0.6;
-    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
-}
-
-@keyframes floatEmoji {
-    0%, 100% {
-        transform: translateY(0) rotate(0deg);
-    }
-    25% {
-        transform: translateY(-10px) rotate(5deg);
-    }
-    50% {
-        transform: translateY(-5px) rotate(-3deg);
-    }
-    75% {
-        transform: translateY(-15px) rotate(3deg);
-    }
-}
-
-/* 角落裝飾 */
-.corner-decoration {
-    position: fixed;
-    width: 150px;
-    height: 150px;
-    pointer-events: none;
-    opacity: 0.15;
-    z-index: 1;
-}
-
-.corner-decoration.top-left {
-    top: 0;
-    left: 0;
-    background: radial-gradient(circle at top left, #00d4ff, transparent 70%);
-}
-
-.corner-decoration.top-right {
-    top: 0;
-    right: 0;
-    background: radial-gradient(circle at top right, #9b59b6, transparent 70%);
-}
-
-.corner-decoration.bottom-left {
-    bottom: 0;
-    left: 0;
-    background: radial-gradient(circle at bottom left, #9b59b6, transparent 70%);
-}
-
-.corner-decoration.bottom-right {
-    bottom: 0;
-    right: 0;
-    background: radial-gradient(circle at bottom right, #00d4ff, transparent 70%);
-}
-
-/* 增強按鈕效果 - 夢幻風格 */
-.mode-btn {
-    position: relative;
-    overflow: hidden;
-    background: rgba(255, 255, 255, 0.08);
-    border: 2px solid rgba(0, 212, 255, 0.3);
-    box-shadow:
-        0 0 20px rgba(0, 212, 255, 0.1),
-        inset 0 0 30px rgba(255, 255, 255, 0.05);
-}
-
-.mode-btn::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: linear-gradient(
-        45deg,
-        transparent,
-        rgba(255, 255, 255, 0.1),
-        transparent
-    );
-    transform: rotate(45deg);
-    transition: all 0.5s;
-    opacity: 0;
-}
-
-.mode-btn:hover::before {
-    animation: shimmer 1.5s infinite;
-}
-
-@keyframes shimmer {
-    0% {
-        transform: translateX(-100%) rotate(45deg);
-    }
-    100% {
-        transform: translateX(100%) rotate(45deg);
-    }
-}
-
-.mode-btn:hover {
-    background: rgba(0, 212, 255, 0.15);
-    border-color: rgba(0, 212, 255, 0.6);
-    box-shadow:
-        0 0 30px rgba(0, 212, 255, 0.3),
-        0 0 60px rgba(155, 89, 182, 0.2),
-        inset 0 0 30px rgba(255, 255, 255, 0.1);
-}
-
-/* 增強標題光暈效果 */
-header h1 {
-    animation: titleGlow 3s ease-in-out infinite alternate;
-}
-
-@keyframes titleGlow {
-    0% {
-        text-shadow:
-            0 0 20px rgba(0, 212, 255, 0.5),
-            0 0 40px rgba(0, 212, 255, 0.3);
-        filter: brightness(1);
-    }
-    100% {
-        text-shadow:
-            0 0 30px rgba(0, 212, 255, 0.7),
-            0 0 60px rgba(155, 89, 182, 0.5),
-            0 0 80px rgba(0, 212, 255, 0.3);
-        filter: brightness(1.1);
-    }
-}
-
-/* 遊戲面板增強 - 發光邊框 */
-#board-section {
-    position: relative;
-}
-
-#board-section::before {
-    content: '';
-    position: absolute;
-    top: -3px;
-    left: -3px;
-    right: -3px;
-    bottom: -3px;
-    background: linear-gradient(45deg, #00d4ff, #9b59b6, #ff6b9d, #00d4ff);
-    background-size: 300% 300%;
-    border-radius: 12px;
-    z-index: -1;
-    animation: borderGlow 4s ease infinite;
-    opacity: 0.5;
-}
-
-@keyframes borderGlow {
-    0%, 100% {
-        background-position: 0% 50%;
-    }
-    50% {
-        background-position: 100% 50%;
-    }
-}
-
-/* Hold 和 Next 區域增強 */
-#hold-section,
-#next-section {
-    position: relative;
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(0, 212, 255, 0.2);
-    box-shadow:
-        0 0 15px rgba(0, 212, 255, 0.1),
-        inset 0 0 20px rgba(0, 0, 0, 0.3);
-}
-
-#hold-section h3,
-#next-section h3,
-#items-section h3 {
-    background: linear-gradient(90deg, #00d4ff, #9b59b6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-shadow: none;
-}
-
-/* 道具欄增強 */
-.item-slot {
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(0, 212, 255, 0.2);
-    transition: all 0.3s ease;
-}
-
-.item-slot:hover {
-    border-color: rgba(0, 212, 255, 0.5);
-    box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
-}
-
-.item-slot.has-item {
-    border-color: rgba(46, 204, 113, 0.5);
-    box-shadow: 0 0 10px rgba(46, 204, 113, 0.3);
-}
-
-/* ============================================
-   失敗鼓勵動畫 - Encouraging Game Over
-   ============================================ */
-
-/* 失敗時的遮罩層增強 */
-#overlay.game-over {
-    background: radial-gradient(
-        ellipse at center,
-        rgba(20, 20, 40, 0.95) 0%,
-        rgba(0, 0, 0, 0.98) 100%
-    );
-}
-
-/* 可愛失敗表情 */
-.game-over-emoji {
-    font-size: 4rem;
-    margin-bottom: 20px;
-    animation: sadBounce 1.5s ease-in-out infinite;
-}
-
-@keyframes sadBounce {
-    0%, 100% {
-        transform: translateY(0) rotate(-5deg);
-    }
-    50% {
-        transform: translateY(-10px) rotate(5deg);
-    }
-}
-
-/* 鼓勵文字容器 */
-.encourage-container {
-    position: relative;
-    padding: 20px;
-    margin: 20px 0;
-}
-
-.encourage-text {
-    font-size: 1.3rem;
-    color: #ff9ff3;
-    text-shadow: 0 0 10px rgba(255, 159, 243, 0.5);
-    animation: encouragePulse 2s ease-in-out infinite;
-}
-
-@keyframes encouragePulse {
-    0%, 100% {
         opacity: 0.8;
-        transform: scale(1);
-    }
-    50% {
-        opacity: 1;
-        transform: scale(1.05);
-    }
-}
-
-/* 彩紙效果 */
-.confetti-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    overflow: hidden;
-    z-index: 1000;
-}
-
-.confetti {
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    opacity: 0;
-    animation: confettiFall linear forwards;
-}
-
-.confetti.square {
-    border-radius: 2px;
-}
-
-.confetti.circle {
-    border-radius: 50%;
-}
-
-.confetti.star {
-    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-}
-
-.confetti.heart {
-    width: 12px;
-    height: 12px;
-    background: #ff6b9d !important;
-    transform: rotate(-45deg);
-    animation: confettiFall linear forwards, heartBeat 0.5s ease-in-out infinite;
-}
-
-.confetti.heart::before,
-.confetti.heart::after {
-    content: '';
-    position: absolute;
-    width: 12px;
-    height: 12px;
-    background: inherit;
-    border-radius: 50%;
-}
-
-.confetti.heart::before {
-    top: -6px;
-    left: 0;
-}
-
-.confetti.heart::after {
-    top: 0;
-    left: 6px;
-}
-
-@keyframes confettiFall {
-    0% {
-        opacity: 1;
-        transform: translateY(-20px) rotate(0deg);
     }
     100% {
-        opacity: 0;
-        transform: translateY(100vh) rotate(720deg);
-    }
-}
-
-@keyframes heartBeat {
-    0%, 100% {
-        transform: rotate(-45deg) scale(1);
-    }
-    50% {
-        transform: rotate(-45deg) scale(1.1);
-    }
-}
-
-/* ============================================
-   成功祝賀動畫 - Victory Celebration
-   ============================================ */
-
-/* 成功遮罩層 */
-#overlay.victory {
-    background: radial-gradient(
-        ellipse at center,
-        rgba(255, 215, 0, 0.1) 0%,
-        rgba(0, 0, 0, 0.95) 100%
-    );
-}
-
-/* 勝利表情 */
-.victory-emoji {
-    font-size: 5rem;
-    animation: victoryBounce 0.8s ease-in-out infinite;
-    filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.8));
-}
-
-@keyframes victoryBounce {
-    0%, 100% {
-        transform: translateY(0) scale(1);
-    }
-    50% {
-        transform: translateY(-20px) scale(1.1);
-    }
-}
-
-/* 新紀錄特效 */
-.new-record {
-    font-size: 2rem;
-    color: #ffd700;
-    text-shadow:
-        0 0 10px rgba(255, 215, 0, 0.8),
-        0 0 20px rgba(255, 215, 0, 0.6),
-        0 0 30px rgba(255, 215, 0, 0.4);
-    animation: recordPulse 1s ease-in-out infinite, recordRainbow 3s linear infinite;
-    background: linear-gradient(90deg, #ffd700, #ff6b9d, #00d4ff, #ffd700);
-    background-size: 300% 100%;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-@keyframes recordPulse {
-    0%, 100% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.1);
-    }
-}
-
-@keyframes recordRainbow {
-    0% {
-        background-position: 0% 50%;
-    }
-    100% {
-        background-position: 300% 50%;
-    }
-}
-
-/* 煙火效果 */
-.firework {
-    position: absolute;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    animation: fireworkExplode 1.5s ease-out forwards;
-}
-
-@keyframes fireworkExplode {
-    0% {
-        transform: scale(0);
-        opacity: 1;
-    }
-    50% {
-        transform: scale(1);
-        opacity: 1;
-    }
-    100% {
-        transform: scale(0);
+        transform: translateY(-150px) translateX(calc(var(--drift, 50px) * 2)) scale(1.2) rotate(360deg);
         opacity: 0;
     }
 }
 
-.firework-particle {
-    position: absolute;
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    animation: particleSpread 1.2s ease-out forwards;
-}
-
-@keyframes particleSpread {
-    0% {
-        transform: translate(0, 0) scale(1);
-        opacity: 1;
-    }
-    100% {
-        transform: translate(var(--tx), var(--ty)) scale(0);
-        opacity: 0;
-    }
-}
-
-/* 閃亮星星效果 */
-.sparkle {
-    position: absolute;
-    pointer-events: none;
-    animation: sparkleAnim 0.8s ease-out forwards;
-}
-
-.sparkle::before,
-.sparkle::after {
-    content: '';
-    position: absolute;
-    background: #ffd700;
-}
-
-.sparkle::before {
-    width: 20px;
-    height: 4px;
-    top: 8px;
-    left: 0;
-    border-radius: 2px;
-}
-
-.sparkle::after {
-    width: 4px;
-    height: 20px;
-    top: 0;
-    left: 8px;
-    border-radius: 2px;
-}
-
-@keyframes sparkleAnim {
-    0% {
-        transform: scale(0) rotate(0deg);
-        opacity: 1;
-    }
-    50% {
-        transform: scale(1) rotate(180deg);
-        opacity: 1;
-    }
-    100% {
-        transform: scale(0) rotate(360deg);
-        opacity: 0;
-    }
-}
-
-/* ============================================
-   增強消行特效 - Enhanced Line Clear
-   ============================================ */
-
-/* 彩虹波紋效果 */
-.clear-ripple {
+/* 水波紋效果 */
+.water-ripple {
     position: absolute;
     border-radius: 50%;
-    border: 3px solid transparent;
-    background: linear-gradient(45deg, #00d4ff, #9b59b6, #ff6b9d, #ffd700) border-box;
-    -webkit-mask:
-        linear-gradient(#fff 0 0) padding-box,
-        linear-gradient(#fff 0 0);
-    -webkit-mask-composite: destination-out;
-    mask-composite: exclude;
-    animation: rippleExpand 0.8s ease-out forwards;
+    border: 2px solid rgba(0, 212, 255, 0.3);
+    animation: rippleExpand 4s ease-out infinite;
     pointer-events: none;
 }
 
@@ -2122,394 +1638,180 @@ header h1 {
     0% {
         width: 0;
         height: 0;
-        opacity: 1;
+        opacity: 0.6;
     }
     100% {
-        width: 200px;
-        height: 200px;
+        width: 400px;
+        height: 400px;
+        margin-left: -200px;
+        margin-top: -200px;
         opacity: 0;
-        margin-left: -100px;
-        margin-top: -100px;
-    }
-}
-
-/* 方塊碎片飛散 */
-.block-fragment {
-    position: absolute;
-    width: 8px;
-    height: 8px;
-    border-radius: 2px;
-    animation: fragmentFly 0.6s ease-out forwards;
-    pointer-events: none;
-}
-
-@keyframes fragmentFly {
-    0% {
-        transform: translate(0, 0) rotate(0deg) scale(1);
-        opacity: 1;
-    }
-    100% {
-        transform: translate(var(--fx), var(--fy)) rotate(var(--fr)) scale(0);
-        opacity: 0;
-    }
-}
-
-/* 粒子爆炸效果 */
-.particle-burst {
-    position: absolute;
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    animation: burstAnim 0.5s ease-out forwards;
-    pointer-events: none;
-}
-
-@keyframes burstAnim {
-    0% {
-        transform: translate(0, 0) scale(1);
-        opacity: 1;
-    }
-    100% {
-        transform: translate(var(--px), var(--py)) scale(0.2);
-        opacity: 0;
-    }
-}
-
-/* 消行光條效果 */
-.clear-flash {
-    position: absolute;
-    height: 30px;
-    background: linear-gradient(90deg,
-        transparent,
-        rgba(255, 255, 255, 0.3),
-        rgba(0, 212, 255, 0.5),
-        rgba(155, 89, 182, 0.5),
-        rgba(255, 255, 255, 0.3),
-        transparent
-    );
-    animation: flashSweep 0.3s ease-out forwards;
-    pointer-events: none;
-}
-
-@keyframes flashSweep {
-    0% {
-        left: -100%;
-        width: 100%;
-        opacity: 1;
-    }
-    100% {
-        left: 100%;
-        width: 100%;
-        opacity: 0;
-    }
-}
-
-/* Tetris 消除特殊效果 */
-.tetris-clear {
-    animation: tetrisCelebrate 0.8s ease-out;
-}
-
-@keyframes tetrisCelebrate {
-    0% {
-        filter: brightness(1);
-    }
-    25% {
-        filter: brightness(2) hue-rotate(30deg);
-    }
-    50% {
-        filter: brightness(1.5) hue-rotate(60deg);
-    }
-    75% {
-        filter: brightness(2) hue-rotate(90deg);
-    }
-    100% {
-        filter: brightness(1) hue-rotate(0deg);
-    }
-}
-
-/* 連擊顯示增強 */
-#combo-display {
-    background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 107, 157, 0.2));
-    border: 2px solid rgba(255, 215, 0, 0.5);
-    border-radius: 15px;
-    padding: 10px 20px;
-    box-shadow:
-        0 0 20px rgba(255, 215, 0, 0.3),
-        inset 0 0 15px rgba(255, 255, 255, 0.1);
-}
-
-#combo-display::before {
-    content: '🔥';
-    margin-right: 8px;
-}
-
-/* 消行類型顯示增強 */
-#clear-type-display {
-    font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 3px;
-}
-
-#clear-type-display.single {
-    color: #87ceeb;
-    text-shadow: 0 0 10px rgba(135, 206, 235, 0.8);
-}
-
-#clear-type-display.double {
-    color: #00d4ff;
-    text-shadow: 0 0 15px rgba(0, 212, 255, 0.8);
-}
-
-#clear-type-display.triple {
-    color: #9b59b6;
-    text-shadow: 0 0 20px rgba(155, 89, 182, 0.8);
-}
-
-#clear-type-display.tetris {
-    color: #ffd700;
-    text-shadow:
-        0 0 20px rgba(255, 215, 0, 0.8),
-        0 0 40px rgba(255, 215, 0, 0.5);
-    animation: tetrisText 0.5s ease-in-out;
-}
-
-@keyframes tetrisText {
-    0%, 100% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.3);
     }
 }
 
 /* ============================================
-   關卡進度增強
-   ============================================ */
-
-#progress-bar {
-    background: rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(0, 212, 255, 0.3);
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-#progress-fill {
-    background: linear-gradient(90deg, #00d4ff, #9b59b6, #ff6b9d);
-    background-size: 200% 100%;
-    animation: progressGradient 2s linear infinite;
-    box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
-}
-
-@keyframes progressGradient {
-    0% {
-        background-position: 0% 50%;
-    }
-    100% {
-        background-position: 200% 50%;
-    }
-}
-
-/* 關卡完成動畫 */
-.stage-complete {
-    animation: stageComplete 1s ease-out;
-}
-
-@keyframes stageComplete {
-    0% {
-        transform: scale(1);
-        filter: brightness(1);
-    }
-    50% {
-        transform: scale(1.2);
-        filter: brightness(1.5);
-    }
-    100% {
-        transform: scale(1);
-        filter: brightness(1);
-    }
-}
-
-/* ============================================
-   主題切換系統 - Theme Switching System
-   ============================================ */
-
-/* 主題切換按鈕 */
-#theme-switcher {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 2000;
-    display: flex;
-    gap: 10px;
-    background: rgba(0, 0, 0, 0.6);
-    padding: 10px 15px;
-    border-radius: 25px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-}
-
-#theme-switcher .theme-btn {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    cursor: pointer;
-    transition: all 0.3s ease;
-    position: relative;
-}
-
-#theme-switcher .theme-btn:hover {
-    transform: scale(1.15);
-    border-color: rgba(255, 255, 255, 0.8);
-}
-
-#theme-switcher .theme-btn.active {
-    border-color: #fff;
-    box-shadow: 0 0 15px currentColor;
-}
-
-#theme-switcher .theme-btn.active::after {
-    content: '';
-    position: absolute;
-    top: -4px;
-    left: -4px;
-    right: -4px;
-    bottom: -4px;
-    border: 2px solid currentColor;
-    border-radius: 50%;
-    animation: themePulse 1.5s ease-in-out infinite;
-}
-
-@keyframes themePulse {
-    0%, 100% { opacity: 0.5; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.1); }
-}
-
-#theme-switcher .theme-bubble {
-    background: linear-gradient(135deg, #00d4ff, #9b59b6);
-}
-
-#theme-switcher .theme-candy {
-    background: linear-gradient(135deg, #ff6b9d, #ffd93d, #6bcb77);
-}
-
-#theme-switcher .theme-space {
-    background: linear-gradient(135deg, #1a1a2e, #4a00e0, #8e2de2);
-}
-
-#theme-label {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 0.8rem;
-    margin-right: 5px;
-    align-self: center;
-}
-
-/* ============================================
-   霓虹糖果風格 - Neon Candy Theme
+   霓虹糖果主題 - Neon Candy Theme
+   彩虹條紋 + 波浪動畫 + 糖果光暈
    ============================================ */
 
 body.theme-candy {
-    background: linear-gradient(135deg, #1a1a2e 0%, #2d1b4e 50%, #1a1a2e 100%);
+    background: linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 50%, #1a0a2e 100%);
 }
 
-body.theme-candy #background-effects {
-    background: radial-gradient(ellipse at top, rgba(255, 107, 157, 0.1), transparent 50%),
-                radial-gradient(ellipse at bottom, rgba(255, 217, 61, 0.1), transparent 50%);
+/* 糖果主題背景 - 彩虹條紋波浪 */
+body.theme-candy #theme-background {
+    background:
+        repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 60px,
+            rgba(255, 107, 157, 0.03) 60px,
+            rgba(255, 107, 157, 0.03) 120px
+        ),
+        repeating-linear-gradient(
+            -45deg,
+            transparent,
+            transparent 60px,
+            rgba(255, 217, 61, 0.03) 60px,
+            rgba(255, 217, 61, 0.03) 120px
+        );
+    animation: candyStripeMove 20s linear infinite;
 }
 
-/* 糖果泡泡 */
+body.theme-candy #theme-background::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+        radial-gradient(ellipse 100% 60% at 50% 100%, rgba(255, 107, 157, 0.2), transparent 50%),
+        radial-gradient(ellipse 80% 40% at 0% 50%, rgba(255, 217, 61, 0.15), transparent 50%),
+        radial-gradient(ellipse 80% 40% at 100% 50%, rgba(107, 203, 119, 0.15), transparent 50%);
+    animation: candyGlowPulse 4s ease-in-out infinite;
+}
+
+@keyframes candyStripeMove {
+    0% { background-position: 0 0, 0 0; }
+    100% { background-position: 120px 120px, -120px 120px; }
+}
+
+@keyframes candyGlowPulse {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+}
+
+/* 糖果波浪效果 */
+body.theme-candy #theme-background::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 200px;
+    background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='rgba(255,107,157,0.1)' d='M0,160L48,176C96,192,192,224,288,213.3C384,203,480,149,576,138.7C672,128,768,160,864,181.3C960,203,1056,213,1152,197.3C1248,181,1344,139,1392,117.3L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+    background-size: cover;
+    animation: candyWave 6s ease-in-out infinite;
+}
+
+@keyframes candyWave {
+    0%, 100% { transform: translateX(0) scaleY(1); }
+    50% { transform: translateX(-20px) scaleY(1.1); }
+}
+
+/* 糖果主題泡泡 - 更圓潤光澤 */
 body.theme-candy .bubble {
     background: radial-gradient(circle at 30% 30%,
-        rgba(255, 255, 255, 0.5),
+        rgba(255, 255, 255, 0.6),
         rgba(255, 107, 157, 0.3) 40%,
         rgba(255, 217, 61, 0.2) 60%,
         transparent 70%);
     box-shadow:
-        inset 0 0 20px rgba(255, 255, 255, 0.4),
-        0 0 15px rgba(255, 107, 157, 0.3);
+        inset 0 0 30px rgba(255, 255, 255, 0.5),
+        0 0 25px rgba(255, 107, 157, 0.4),
+        0 0 50px rgba(255, 217, 61, 0.2);
+    animation: floatBubble linear infinite, candyBubbleGlow 2s ease-in-out infinite;
 }
 
-/* 糖果星星 */
-body.theme-candy .star {
-    background: #ffd93d;
-    box-shadow:
-        0 0 6px 2px rgba(255, 217, 61, 0.8),
-        0 0 12px 4px rgba(255, 107, 157, 0.5),
-        0 0 20px 6px rgba(107, 203, 119, 0.3);
+@keyframes candyBubbleGlow {
+    0%, 100% { filter: hue-rotate(0deg) brightness(1); }
+    50% { filter: hue-rotate(30deg) brightness(1.1); }
 }
 
-/* 糖果光暈 */
-body.theme-candy .glow-orb.cyan {
-    background: radial-gradient(circle, #ff6b9d, transparent 70%);
+/* 糖果漂浮星星 - 彩虹色 */
+body.theme-candy .candy-star {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(135deg, #ff6b9d, #ffd93d, #6bcb77);
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    animation: candyStarFloat 8s ease-in-out infinite, candyStarSpin 4s linear infinite;
+    filter: drop-shadow(0 0 10px currentColor);
 }
 
-body.theme-candy .glow-orb.purple {
-    background: radial-gradient(circle, #ffd93d, transparent 70%);
+@keyframes candyStarFloat {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-30px) scale(1.1); }
 }
 
-body.theme-candy .glow-orb.pink {
-    background: radial-gradient(circle, #6bcb77, transparent 70%);
+@keyframes candyStarSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
-/* 糖果按鈕 */
+/* 糖果主題標題 */
+body.theme-candy header h1 {
+    background: linear-gradient(90deg, #ff6b9d, #ffd93d, #6bcb77, #ff6b9d);
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: candyGradientFlow 3s linear infinite;
+    text-shadow: 0 0 30px rgba(255, 107, 157, 0.5);
+}
+
+@keyframes candyGradientFlow {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 300% 50%; }
+}
+
+body.theme-candy #mode-selection-content h2 {
+    background: linear-gradient(90deg, #ff6b9d, #ffd93d, #6bcb77);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* 糖果主題按鈕 */
 body.theme-candy .mode-btn {
     background: rgba(255, 107, 157, 0.1);
     border: 2px solid rgba(255, 107, 157, 0.4);
-    box-shadow:
-        0 0 20px rgba(255, 107, 157, 0.2),
-        inset 0 0 30px rgba(255, 255, 255, 0.05);
+    box-shadow: 0 0 20px rgba(255, 107, 157, 0.2);
 }
 
 body.theme-candy .mode-btn:hover {
     background: rgba(255, 217, 61, 0.15);
     border-color: rgba(255, 217, 61, 0.7);
-    box-shadow:
-        0 0 30px rgba(255, 217, 61, 0.4),
-        0 0 60px rgba(255, 107, 157, 0.2);
+    box-shadow: 0 0 30px rgba(255, 217, 61, 0.4);
     animation: candyBounce 0.5s ease;
 }
 
 @keyframes candyBounce {
     0%, 100% { transform: translateY(-5px) scale(1); }
-    50% { transform: translateY(-10px) scale(1.02); }
+    50% { transform: translateY(-12px) scale(1.03); }
 }
 
-/* 糖果標題 - 保留漸層但改變顏色 */
-body.theme-candy header h1 {
-    background: linear-gradient(90deg, #ff6b9d, #ffd93d, #6bcb77);
-    background-size: 200% 100%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    animation: candyGradient 3s linear infinite, titleGlow 3s ease-in-out infinite alternate;
-}
-
-@keyframes candyGradient {
-    0% { background-position: 0% 50%; }
-    100% { background-position: 200% 50%; }
-}
-
-body.theme-candy #mode-selection-content h2 {
-    background: linear-gradient(90deg, #ff6b9d, #ffd93d, #6bcb77);
-    background-size: 200% 100%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    animation: candyGradient 3s linear infinite;
-}
-
-/* 糖果裝飾表情 */
-body.theme-candy .floating-emoji {
-    filter: drop-shadow(0 0 8px rgba(255, 217, 61, 0.6));
-}
-
-/* 糖果遊戲面板 */
+/* 糖果主題遊戲面板 */
 body.theme-candy #board-section::before {
     background: linear-gradient(45deg, #ff6b9d, #ffd93d, #6bcb77, #ff6b9d);
+    background-size: 300% 300%;
+    animation: candyBorderGlow 3s ease infinite;
 }
 
-body.theme-candy #hold-section,
-body.theme-candy #next-section {
-    border-color: rgba(255, 107, 157, 0.3);
-    box-shadow: 0 0 15px rgba(255, 107, 157, 0.15);
+@keyframes candyBorderGlow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
 }
 
 body.theme-candy #hold-section h3,
@@ -2518,83 +1820,216 @@ body.theme-candy #items-section h3 {
     background: linear-gradient(90deg, #ff6b9d, #ffd93d);
     -webkit-background-clip: text;
     background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
-/* 糖果進度條 */
 body.theme-candy #progress-fill {
     background: linear-gradient(90deg, #ff6b9d, #ffd93d, #6bcb77);
 }
 
-/* 糖果彩紙顏色 */
-body.theme-candy .confetti {
-    filter: brightness(1.2);
-}
-
 /* ============================================
-   太空星際風格 - Space Galaxy Theme
+   星際太空主題 - Space Galaxy Theme
+   星空點點 + 大流星 + 星雲漩渦
    ============================================ */
 
 body.theme-space {
-    background: linear-gradient(135deg, #0d0d1a 0%, #1a0a2e 50%, #0d0d1a 100%);
+    background: linear-gradient(135deg, #0a0a15 0%, #0d0d25 50%, #0a0a15 100%);
 }
 
-body.theme-space #background-effects {
+/* 太空主題背景 - 星空 + 星雲 */
+body.theme-space #theme-background {
     background:
-        radial-gradient(ellipse at 20% 30%, rgba(138, 43, 226, 0.15), transparent 40%),
-        radial-gradient(ellipse at 80% 70%, rgba(75, 0, 130, 0.15), transparent 40%),
-        radial-gradient(ellipse at 50% 50%, rgba(30, 144, 255, 0.1), transparent 60%);
+        radial-gradient(ellipse 150% 100% at 50% 0%, rgba(138, 43, 226, 0.15), transparent 50%),
+        radial-gradient(ellipse 100% 80% at 0% 100%, rgba(75, 0, 130, 0.2), transparent 40%),
+        radial-gradient(ellipse 100% 80% at 100% 100%, rgba(30, 144, 255, 0.15), transparent 40%);
+    animation: spaceNebulaFlow 15s ease-in-out infinite;
 }
 
-/* 太空泡泡 - 星雲效果 */
+body.theme-space #theme-background::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image:
+        radial-gradient(2px 2px at 20px 30px, rgba(255,255,255,0.8), transparent),
+        radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.6), transparent),
+        radial-gradient(1px 1px at 90px 40px, rgba(255,255,255,0.9), transparent),
+        radial-gradient(2px 2px at 130px 80px, rgba(255,255,255,0.5), transparent),
+        radial-gradient(1px 1px at 160px 120px, rgba(255,255,255,0.7), transparent),
+        radial-gradient(2px 2px at 200px 50px, rgba(138,43,226,0.8), transparent),
+        radial-gradient(1px 1px at 250px 150px, rgba(255,255,255,0.6), transparent),
+        radial-gradient(2px 2px at 300px 100px, rgba(30,144,255,0.7), transparent);
+    background-size: 350px 200px;
+    animation: spaceStarsMove 60s linear infinite;
+}
+
+@keyframes spaceNebulaFlow {
+    0%, 100% {
+        filter: hue-rotate(0deg);
+        opacity: 0.8;
+    }
+    50% {
+        filter: hue-rotate(20deg);
+        opacity: 1;
+    }
+}
+
+@keyframes spaceStarsMove {
+    0% { background-position: 0 0; }
+    100% { background-position: 350px 200px; }
+}
+
+/* 星雲漩渦效果 */
+body.theme-space #theme-background::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 800px;
+    height: 800px;
+    margin: -400px 0 0 -400px;
+    background:
+        conic-gradient(from 0deg,
+            transparent 0deg,
+            rgba(138, 43, 226, 0.1) 60deg,
+            transparent 120deg,
+            rgba(30, 144, 255, 0.08) 180deg,
+            transparent 240deg,
+            rgba(75, 0, 130, 0.1) 300deg,
+            transparent 360deg
+        );
+    border-radius: 50%;
+    animation: spaceNebulaRotate 60s linear infinite;
+    opacity: 0.6;
+}
+
+@keyframes spaceNebulaRotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 太空主題泡泡 - 改為星球效果 */
 body.theme-space .bubble {
-    background: radial-gradient(circle at 30% 30%,
-        rgba(255, 255, 255, 0.3),
-        rgba(138, 43, 226, 0.2) 40%,
-        rgba(75, 0, 130, 0.1) 60%,
-        transparent 70%);
+    background: radial-gradient(circle at 35% 35%,
+        rgba(200, 200, 220, 0.4),
+        rgba(138, 43, 226, 0.3) 40%,
+        rgba(75, 0, 130, 0.2) 60%,
+        rgba(30, 30, 60, 0.3) 80%,
+        transparent 90%);
     box-shadow:
-        inset 0 0 25px rgba(138, 43, 226, 0.3),
-        0 0 20px rgba(138, 43, 226, 0.2);
-    animation: floatBubble linear infinite, nebulaGlow 4s ease-in-out infinite;
+        inset -15px -15px 30px rgba(0, 0, 0, 0.5),
+        inset 5px 5px 20px rgba(255, 255, 255, 0.2),
+        0 0 30px rgba(138, 43, 226, 0.4),
+        0 0 60px rgba(75, 0, 130, 0.2);
+    border: 1px solid rgba(138, 43, 226, 0.2);
 }
 
-@keyframes nebulaGlow {
-    0%, 100% { filter: hue-rotate(0deg); }
-    50% { filter: hue-rotate(30deg); }
+body.theme-space .bubble::before {
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.6), transparent 70%);
+    width: 25%;
+    height: 15%;
 }
 
-/* 太空星星 - 更亮更閃 */
+body.theme-space .bubble::after {
+    background: none;
+    border: none;
+}
+
+/* 大流星效果 */
+.meteor {
+    position: absolute;
+    width: 3px;
+    height: 150px;
+    background: linear-gradient(to bottom,
+        transparent 0%,
+        rgba(255, 255, 255, 0.2) 20%,
+        rgba(255, 255, 255, 0.9) 50%,
+        rgba(138, 43, 226, 0.8) 70%,
+        transparent 100%);
+    transform: rotate(-45deg);
+    animation: meteorFall 2.5s linear forwards;
+    pointer-events: none;
+    filter: blur(0.5px);
+    box-shadow:
+        0 0 10px rgba(255, 255, 255, 0.5),
+        0 0 20px rgba(138, 43, 226, 0.3);
+}
+
+.meteor::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    margin: -4px 0 0 -4px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 15px 5px rgba(255, 255, 255, 0.8);
+}
+
+@keyframes meteorFall {
+    0% {
+        opacity: 0;
+        transform: translateX(0) translateY(0) rotate(-45deg);
+    }
+    10% {
+        opacity: 1;
+    }
+    85% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(500px) translateY(500px) rotate(-45deg);
+    }
+}
+
+/* 星星閃爍 - 太空版 */
 body.theme-space .star {
+    width: 3px;
+    height: 3px;
     background: #fff;
     box-shadow:
         0 0 8px 3px rgba(255, 255, 255, 0.9),
         0 0 15px 5px rgba(138, 43, 226, 0.6),
-        0 0 25px 8px rgba(30, 144, 255, 0.4);
+        0 0 25px 8px rgba(30, 144, 255, 0.3);
 }
 
 body.theme-space .star.large {
-    animation: twinkle ease-in-out infinite, starShoot 8s ease-in-out infinite;
+    width: 5px;
+    height: 5px;
+    box-shadow:
+        0 0 12px 4px rgba(255, 255, 255, 1),
+        0 0 25px 8px rgba(138, 43, 226, 0.7),
+        0 0 40px 12px rgba(30, 144, 255, 0.4);
 }
 
-@keyframes starShoot {
-    0%, 90%, 100% { transform: translateX(0) translateY(0); }
-    95% { transform: translateX(20px) translateY(-10px); }
+/* 太空主題標題 */
+body.theme-space header h1 {
+    background: linear-gradient(90deg, #8a2be2, #4169e1, #1e90ff, #8a2be2);
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: spaceGradient 4s linear infinite;
+    text-shadow: 0 0 40px rgba(138, 43, 226, 0.8);
 }
 
-/* 太空光暈 - 星雲色 */
-body.theme-space .glow-orb.cyan {
-    background: radial-gradient(circle, rgba(138, 43, 226, 0.6), transparent 70%);
+@keyframes spaceGradient {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 300% 50%; }
 }
 
-body.theme-space .glow-orb.purple {
-    background: radial-gradient(circle, rgba(75, 0, 130, 0.6), transparent 70%);
+body.theme-space #mode-selection-content h2 {
+    background: linear-gradient(90deg, #8a2be2, #4169e1, #1e90ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
-body.theme-space .glow-orb.pink {
-    background: radial-gradient(circle, rgba(30, 144, 255, 0.5), transparent 70%);
-}
-
-/* 太空按鈕 */
+/* 太空主題按鈕 */
 body.theme-space .mode-btn {
     background: rgba(138, 43, 226, 0.1);
     border: 2px solid rgba(138, 43, 226, 0.4);
@@ -2608,57 +2043,25 @@ body.theme-space .mode-btn:hover {
     border-color: rgba(138, 43, 226, 0.8);
     box-shadow:
         0 0 40px rgba(138, 43, 226, 0.4),
-        0 0 80px rgba(30, 144, 255, 0.2),
-        inset 0 0 40px rgba(255, 255, 255, 0.05);
+        0 0 80px rgba(30, 144, 255, 0.2);
 }
 
-/* 太空標題 */
-body.theme-space header h1 {
-    background: linear-gradient(90deg, #8a2be2, #4169e1, #1e90ff, #8a2be2);
-    background-size: 300% 100%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    animation: spaceGradient 4s linear infinite, titleGlow 3s ease-in-out infinite alternate;
-    text-shadow: 0 0 30px rgba(138, 43, 226, 0.8);
-}
-
-@keyframes spaceGradient {
-    0% { background-position: 0% 50%; }
-    100% { background-position: 300% 50%; }
-}
-
-body.theme-space #mode-selection-content h2 {
-    background: linear-gradient(90deg, #8a2be2, #4169e1, #1e90ff);
-    -webkit-background-clip: text;
-    background-clip: text;
-}
-
-/* 太空裝飾 */
-body.theme-space .floating-emoji {
-    filter: drop-shadow(0 0 10px rgba(138, 43, 226, 0.8));
-}
-
-body.theme-space .corner-decoration.top-left,
-body.theme-space .corner-decoration.bottom-right {
-    background: radial-gradient(circle at center, rgba(138, 43, 226, 0.3), transparent 70%);
-}
-
-body.theme-space .corner-decoration.top-right,
-body.theme-space .corner-decoration.bottom-left {
-    background: radial-gradient(circle at center, rgba(30, 144, 255, 0.3), transparent 70%);
-}
-
-/* 太空遊戲面板 */
+/* 太空主題遊戲面板 */
 body.theme-space #board-section::before {
     background: linear-gradient(45deg, #8a2be2, #4169e1, #1e90ff, #8a2be2);
+    background-size: 300% 300%;
+    animation: spaceBorderGlow 4s ease infinite;
+}
+
+@keyframes spaceBorderGlow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
 }
 
 body.theme-space #hold-section,
 body.theme-space #next-section {
     border-color: rgba(138, 43, 226, 0.3);
-    box-shadow:
-        0 0 20px rgba(138, 43, 226, 0.15),
-        inset 0 0 30px rgba(75, 0, 130, 0.1);
+    box-shadow: 0 0 20px rgba(138, 43, 226, 0.15);
 }
 
 body.theme-space #hold-section h3,
@@ -2667,51 +2070,429 @@ body.theme-space #items-section h3 {
     background: linear-gradient(90deg, #8a2be2, #1e90ff);
     -webkit-background-clip: text;
     background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
-/* 太空進度條 */
 body.theme-space #progress-fill {
     background: linear-gradient(90deg, #8a2be2, #4169e1, #1e90ff);
 }
 
-/* 流星效果 */
-body.theme-space .meteor {
+/* ============================================
+   通用主題星星閃爍
+   ============================================ */
+
+.star {
     position: absolute;
-    width: 2px;
-    height: 80px;
-    background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.8), transparent);
-    transform: rotate(-45deg);
-    animation: meteorFall 2s linear forwards;
-    pointer-events: none;
+    width: 4px;
+    height: 4px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow:
+        0 0 6px 2px rgba(255, 255, 255, 0.8),
+        0 0 12px 4px rgba(0, 212, 255, 0.5);
+    animation: twinkle ease-in-out infinite;
 }
 
-@keyframes meteorFall {
+.star.large {
+    width: 6px;
+    height: 6px;
+}
+
+@keyframes twinkle {
+    0%, 100% {
+        opacity: 0.3;
+        transform: scale(0.8);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.3);
+    }
+}
+
+/* ============================================
+   強化遊戲動畫效果
+   ============================================ */
+
+/* 失敗鼓勵動畫 - 放大效果 */
+.game-over-emoji {
+    font-size: 5rem;
+    margin-bottom: 25px;
+    animation: sadBounce 1.5s ease-in-out infinite;
+    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.5));
+}
+
+@keyframes sadBounce {
+    0%, 100% {
+        transform: translateY(0) rotate(-8deg) scale(1);
+    }
+    25% {
+        transform: translateY(-15px) rotate(0deg) scale(1.05);
+    }
+    50% {
+        transform: translateY(-5px) rotate(8deg) scale(1);
+    }
+    75% {
+        transform: translateY(-20px) rotate(0deg) scale(1.1);
+    }
+}
+
+.encourage-container {
+    position: relative;
+    padding: 25px;
+    margin: 25px 0;
+}
+
+.encourage-text {
+    font-size: 1.5rem;
+    color: #ff9ff3;
+    text-shadow:
+        0 0 15px rgba(255, 159, 243, 0.6),
+        0 0 30px rgba(255, 159, 243, 0.3);
+    animation: encouragePulse 2s ease-in-out infinite;
+}
+
+@keyframes encouragePulse {
+    0%, 100% {
+        opacity: 0.8;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.08);
+    }
+}
+
+/* 勝利祝賀動畫 - 放大效果 */
+.victory-emoji {
+    font-size: 6rem;
+    animation: victoryBounce 0.8s ease-in-out infinite;
+    filter: drop-shadow(0 0 30px rgba(255, 215, 0, 0.8));
+}
+
+@keyframes victoryBounce {
+    0%, 100% {
+        transform: translateY(0) scale(1);
+    }
+    50% {
+        transform: translateY(-30px) scale(1.15);
+    }
+}
+
+.new-record {
+    font-size: 2.5rem;
+    color: #ffd700;
+    text-shadow:
+        0 0 15px rgba(255, 215, 0, 0.8),
+        0 0 30px rgba(255, 215, 0, 0.6),
+        0 0 45px rgba(255, 215, 0, 0.4);
+    animation: recordPulse 1s ease-in-out infinite, recordRainbow 3s linear infinite;
+    background: linear-gradient(90deg, #ffd700, #ff6b9d, #00d4ff, #ffd700);
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 15px 0;
+}
+
+@keyframes recordPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+}
+
+@keyframes recordRainbow {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 300% 50%; }
+}
+
+/* 彩紙效果 - 放大 */
+.confetti-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 1000;
+}
+
+.confetti {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    opacity: 0;
+    animation: confettiFall linear forwards;
+}
+
+.confetti.square { border-radius: 3px; }
+.confetti.circle { border-radius: 50%; }
+.confetti.star {
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+.confetti.heart {
+    width: 16px;
+    height: 16px;
+    background: #ff6b9d !important;
+    clip-path: path('M8 14s-6-4.35-6-8a4 4 0 0 1 6-3.5A4 4 0 0 1 14 6c0 3.65-6 8-6 8z');
+}
+
+@keyframes confettiFall {
     0% {
-        opacity: 0;
-        transform: translateX(0) translateY(0) rotate(-45deg);
-    }
-    10% {
         opacity: 1;
-    }
-    90% {
-        opacity: 1;
+        transform: translateY(-30px) rotate(0deg) scale(1.2);
     }
     100% {
         opacity: 0;
-        transform: translateX(300px) translateY(300px) rotate(-45deg);
+        transform: translateY(100vh) rotate(1080deg) scale(0.5);
     }
 }
 
-/* 星座連線效果 */
-body.theme-space .constellation-line {
+/* 煙火效果 - 放大 */
+.firework-particle {
     position: absolute;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-    pointer-events: none;
-    animation: constellationFade 3s ease-in-out infinite;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    animation: particleSpread 1.5s ease-out forwards;
 }
 
-@keyframes constellationFade {
-    0%, 100% { opacity: 0.2; }
-    50% { opacity: 0.5; }
+@keyframes particleSpread {
+    0% {
+        transform: translate(0, 0) scale(1.5);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(var(--tx), var(--ty)) scale(0);
+        opacity: 0;
+    }
 }
+
+/* 閃爍星星 - 放大 */
+.sparkle {
+    position: absolute;
+    pointer-events: none;
+    animation: sparkleAnim 1s ease-out forwards;
+}
+
+.sparkle::before,
+.sparkle::after {
+    content: '';
+    position: absolute;
+    background: #ffd700;
+}
+
+.sparkle::before {
+    width: 30px;
+    height: 6px;
+    top: 12px;
+    left: 0;
+    border-radius: 3px;
+}
+
+.sparkle::after {
+    width: 6px;
+    height: 30px;
+    top: 0;
+    left: 12px;
+    border-radius: 3px;
+}
+
+@keyframes sparkleAnim {
+    0% {
+        transform: scale(0) rotate(0deg);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.3) rotate(180deg);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(0) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+/* 消行特效 - 放大增強 */
+.clear-ripple {
+    position: absolute;
+    border-radius: 50%;
+    border: 4px solid transparent;
+    background: linear-gradient(45deg, #00d4ff, #9b59b6, #ff6b9d, #ffd700) border-box;
+    -webkit-mask:
+        linear-gradient(#fff 0 0) padding-box,
+        linear-gradient(#fff 0 0);
+    -webkit-mask-composite: destination-out;
+    mask-composite: exclude;
+    animation: rippleExpandEnhanced 1s ease-out forwards;
+    pointer-events: none;
+}
+
+@keyframes rippleExpandEnhanced {
+    0% {
+        width: 0;
+        height: 0;
+        opacity: 1;
+    }
+    100% {
+        width: 300px;
+        height: 300px;
+        margin-left: -150px;
+        margin-top: -150px;
+        opacity: 0;
+    }
+}
+
+.block-fragment {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    animation: fragmentFlyEnhanced 0.8s ease-out forwards;
+    pointer-events: none;
+}
+
+@keyframes fragmentFlyEnhanced {
+    0% {
+        transform: translate(0, 0) rotate(0deg) scale(1.2);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(var(--fx), var(--fy)) rotate(var(--fr)) scale(0);
+        opacity: 0;
+    }
+}
+
+.particle-burst {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    animation: burstAnimEnhanced 0.7s ease-out forwards;
+    pointer-events: none;
+}
+
+@keyframes burstAnimEnhanced {
+    0% {
+        transform: translate(0, 0) scale(1.5);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(var(--px), var(--py)) scale(0.3);
+        opacity: 0;
+    }
+}
+
+/* Tetris 消除特殊效果 - 更強烈 */
+.tetris-clear {
+    animation: tetrisCelebrateEnhanced 1s ease-out;
+}
+
+@keyframes tetrisCelebrateEnhanced {
+    0% { filter: brightness(1); }
+    20% { filter: brightness(2.5) hue-rotate(30deg); }
+    40% { filter: brightness(1.8) hue-rotate(60deg); }
+    60% { filter: brightness(2.2) hue-rotate(90deg); }
+    80% { filter: brightness(1.5) hue-rotate(120deg); }
+    100% { filter: brightness(1) hue-rotate(0deg); }
+}
+
+/* 連擊顯示增強 */
+#combo-display {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.25), rgba(255, 107, 157, 0.25));
+    border: 3px solid rgba(255, 215, 0, 0.6);
+    border-radius: 20px;
+    padding: 15px 30px;
+    font-size: 1.3rem;
+    box-shadow:
+        0 0 30px rgba(255, 215, 0, 0.4),
+        inset 0 0 20px rgba(255, 255, 255, 0.1);
+}
+
+/* 消行類型顯示增強 */
+#clear-type-display {
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    font-size: 1.4rem;
+}
+
+#clear-type-display.tetris {
+    color: #ffd700;
+    text-shadow:
+        0 0 25px rgba(255, 215, 0, 0.9),
+        0 0 50px rgba(255, 215, 0, 0.6);
+    animation: tetrisTextEnhanced 0.6s ease-in-out;
+}
+
+@keyframes tetrisTextEnhanced {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.5); }
+}
+
+/* 關卡進度增強 */
+#progress-bar {
+    background: rgba(0, 0, 0, 0.5);
+    border: 2px solid rgba(0, 212, 255, 0.4);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+#progress-fill {
+    background: linear-gradient(90deg, #00d4ff, #9b59b6, #ff6b9d);
+    background-size: 200% 100%;
+    animation: progressGradient 2s linear infinite;
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.6);
+    border-radius: 10px;
+}
+
+@keyframes progressGradient {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+}
+
+/* 遊戲面板增強發光邊框 */
+#board-section {
+    position: relative;
+}
+
+#board-section::before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    right: -4px;
+    bottom: -4px;
+    background: linear-gradient(45deg, #00d4ff, #9b59b6, #ff6b9d, #00d4ff);
+    background-size: 300% 300%;
+    border-radius: 14px;
+    z-index: -1;
+    animation: borderGlow 4s ease infinite;
+    opacity: 0.6;
+}
+
+@keyframes borderGlow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+/* 增強標題光暈效果 */
+header h1 {
+    animation: titleGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes titleGlow {
+    0% {
+        text-shadow:
+            0 0 25px rgba(0, 212, 255, 0.6),
+            0 0 50px rgba(0, 212, 255, 0.4);
+        filter: brightness(1);
+    }
+    100% {
+        text-shadow:
+            0 0 40px rgba(0, 212, 255, 0.8),
+            0 0 80px rgba(155, 89, 182, 0.6),
+            0 0 100px rgba(0, 212, 255, 0.4);
+        filter: brightness(1.15);
+    }
+}
+
