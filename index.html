@@ -7,6 +7,35 @@
     <link rel="stylesheet" href="styles/game.css">
 </head>
 <body>
+    <!-- 夢幻背景效果層 -->
+    <div id="background-effects">
+        <!-- 泡泡、星星將由 JS 動態生成 -->
+    </div>
+
+    <!-- 光暈效果層 -->
+    <div class="glow-orb cyan" style="width: 300px; height: 300px; top: 10%; left: 5%;"></div>
+    <div class="glow-orb purple" style="width: 400px; height: 400px; top: 60%; right: 5%;"></div>
+    <div class="glow-orb pink" style="width: 250px; height: 250px; bottom: 10%; left: 30%;"></div>
+
+    <!-- 角落裝飾 -->
+    <div class="corner-decoration top-left"></div>
+    <div class="corner-decoration top-right"></div>
+    <div class="corner-decoration bottom-left"></div>
+    <div class="corner-decoration bottom-right"></div>
+
+    <!-- 可愛裝飾元素 -->
+    <div id="decorations">
+        <span class="floating-emoji" style="top: 15%; left: 3%;">⭐</span>
+        <span class="floating-emoji" style="top: 25%; right: 5%; animation-delay: 1s;">🌟</span>
+        <span class="floating-emoji" style="top: 70%; left: 2%; animation-delay: 2s;">✨</span>
+        <span class="floating-emoji" style="bottom: 20%; right: 3%; animation-delay: 0.5s;">💫</span>
+        <span class="floating-emoji" style="top: 45%; left: 1%; animation-delay: 1.5s;">🎮</span>
+        <span class="floating-emoji" style="top: 55%; right: 2%; animation-delay: 2.5s;">🎯</span>
+    </div>
+
+    <!-- 彩紙效果容器 -->
+    <div class="confetti-container" id="confetti-container"></div>
+
     <div id="game-container">
         <header>
             <h1>TETRIS</h1>
@@ -1344,7 +1373,13 @@
             this.overlay.classList.remove('hidden');
         }
 
-        hideOverlay() { this.overlay.classList.add('hidden'); }
+        hideOverlay() {
+            this.overlay.classList.add('hidden');
+            // 清理特效元素
+            if (window.effectsManager) {
+                window.effectsManager.cleanupOverlay(this.overlay);
+            }
+        }
 
         render(board, piece, ghostY, holdPiece, canHold, nextPieces, hasFog = false) {
             this.clearGameCanvas();
@@ -2147,9 +2182,22 @@
 
             if (result.clearType) {
                 this.renderer.showEffect('clear', result.clearType);
+
+                // 播放增強消行特效
+                if (window.effectsManager && count > 0) {
+                    const boardElement = document.getElementById('game-canvas');
+                    const clearedRows = this.board.getLastClearedRows ? this.board.getLastClearedRows() : [];
+                    const clearType = result.clearType.toLowerCase();
+                    window.effectsManager.enhancedLineClear(boardElement, clearedRows, clearType);
+                }
             }
             if (result.combo > 1) {
                 this.renderer.showEffect('combo', result.combo);
+
+                // 連擊特效
+                if (window.effectsManager) {
+                    window.effectsManager.comboEffect(result.combo);
+                }
             }
 
             // 更新關卡進度
@@ -2175,6 +2223,11 @@
                 this.initObstacles();
             }
             this.renderer.showEffect('stage', '關卡 ' + newStage);
+
+            // 播放關卡完成特效
+            if (window.effectsManager) {
+                window.effectsManager.stageCompleteEffect();
+            }
         }
 
         updateUI() {
@@ -2226,6 +2279,14 @@
             if (r.added && r.rank <= 3) msg += `\n新紀錄！第 ${r.rank} 名！`;
             msg += '\n按 Enter 重新開始';
             this.renderer.showOverlay('GAME OVER', msg, r.scores);
+
+            // 播放失敗鼓勵動畫
+            setTimeout(() => {
+                const overlay = document.getElementById('overlay');
+                if (window.effectsManager && overlay) {
+                    window.effectsManager.showGameOverEncouragement(overlay, score);
+                }
+            }, 100);
         }
 
         gameComplete() {
@@ -2236,9 +2297,18 @@
             const score = this.scoreManager.getScore();
             const r = this.scoreManager.addHighScore(score);
             let msg = `恭喜通關所有關卡！\n最終分數：${score.toLocaleString()}`;
-            if (r.added && r.rank <= 3) msg += `\n新紀錄！第 ${r.rank} 名！`;
+            const isNewRecord = r.added && r.rank <= 3;
+            if (isNewRecord) msg += `\n新紀錄！第 ${r.rank} 名！`;
             msg += '\n按 Enter 重新開始';
             this.renderer.showOverlay('恭喜通關！', msg, r.scores);
+
+            // 播放勝利祝賀動畫
+            setTimeout(() => {
+                const overlay = document.getElementById('overlay');
+                if (window.effectsManager && overlay) {
+                    window.effectsManager.showVictoryCelebration(overlay, isNewRecord);
+                }
+            }, 100);
         }
 
         destroy() {
@@ -3288,6 +3358,18 @@
 
             this.battleOverlay.classList.remove('hidden');
 
+            // 播放對戰結束特效
+            if (window.effectsManager) {
+                if (winner !== '平手！') {
+                    // 有勝者，播放勝利慶祝
+                    window.effectsManager.createFireworks(6);
+                    window.effectsManager.createConfetti(50);
+                } else {
+                    // 平手，播放溫和效果
+                    window.effectsManager.createConfetti(30, ['#ffeaa7', '#74b9ff', '#a29bfe']);
+                }
+            }
+
             // Handle Enter key to return to menu
             const handleEnter = (e) => {
                 if (e.code === 'Enter') {
@@ -3388,5 +3470,8 @@
         console.log('Tetris ready! Select game mode to start.');
     });
     </script>
+
+    <!-- 夢幻泡泡風格特效系統 -->
+    <script src="src/effects.js"></script>
 </body>
 </html>
