@@ -15,17 +15,19 @@ class EffectsManager {
         // 當前主題
         this.currentTheme = 'bubble';
 
-        // 主題配色方案
+        // 主題配色方案 - 明亮色系
         this.themeColors = {
             bubble: {
-                primary: ['#00d4ff', '#9b59b6', '#ff6b9d', '#ffd700'],
-                confetti: ['#00d4ff', '#9b59b6', '#ff6b9d', '#ffd700', '#2ecc71'],
-                soft: ['#ff9ff3', '#ffeaa7', '#74b9ff', '#a29bfe', '#dfe6e9']
+                // 白、黃、橘、淺藍
+                primary: ['#ffffff', '#ffd700', '#ffa500', '#87ceeb'],
+                confetti: ['#ffffff', '#ffd700', '#ffa500', '#87ceeb', '#ffec8b'],
+                soft: ['#fffacd', '#ffe4b5', '#b0e0e6', '#f0f8ff', '#fff8dc']
             },
             candy: {
-                primary: ['#ff6b9d', '#ffd93d', '#6bcb77', '#4ecdc4'],
-                confetti: ['#ff6b9d', '#ffd93d', '#6bcb77', '#4ecdc4', '#ff9f43'],
-                soft: ['#ffcccc', '#fff3cd', '#d4edda', '#cce5ff']
+                // 粉、紫、黃
+                primary: ['#ff96c8', '#c896e8', '#ffe664', '#ffb6dc'],
+                confetti: ['#ff96c8', '#c896e8', '#ffe664', '#ffb6dc', '#dda0dd'],
+                soft: ['#ffe4ec', '#e8d4f0', '#fff8dc', '#ffeef4']
             },
             space: {
                 primary: ['#8a2be2', '#4169e1', '#1e90ff', '#9370db'],
@@ -34,11 +36,11 @@ class EffectsManager {
             }
         };
 
-        // 泡泡尺寸設定（放大）
+        // 泡泡尺寸設定（再度放大）
         this.bubbleSizes = {
-            bubble: { min: 50, max: 120 },  // 夢幻泡泡 - 大泡泡
-            candy: { min: 40, max: 100 },   // 霓虹糖果 - 中等
-            space: { min: 30, max: 80 }     // 太空 - 星球效果
+            bubble: { min: 80, max: 180 },  // 夢幻泡泡 - 超大泡泡
+            candy: { min: 60, max: 140 },   // 霓虹糖果 - 大糖果
+            space: { min: 50, max: 120 }    // 太空 - 大星球效果
         };
 
         // 鼓勵訊息列表
@@ -513,19 +515,6 @@ class EffectsManager {
 
         overlayElement.classList.add('game-over');
 
-        // 添加可愛失敗表情
-        const existingEmoji = overlayElement.querySelector('.game-over-emoji');
-        if (!existingEmoji) {
-            const emoji = document.createElement('div');
-            emoji.className = 'game-over-emoji';
-            emoji.textContent = this.getRandomSadEmoji();
-
-            const overlayContent = overlayElement.querySelector('#overlay-content');
-            if (overlayContent) {
-                overlayContent.insertBefore(emoji, overlayContent.firstChild);
-            }
-        }
-
         // 添加鼓勵文字
         const existingEncourage = overlayElement.querySelector('.encourage-container');
         if (!existingEncourage) {
@@ -557,19 +546,6 @@ class EffectsManager {
 
         overlayElement.classList.add('victory');
 
-        // 添加勝利表情
-        const existingEmoji = overlayElement.querySelector('.victory-emoji');
-        if (!existingEmoji) {
-            const emoji = document.createElement('div');
-            emoji.className = 'victory-emoji';
-            emoji.textContent = this.getRandomHappyEmoji();
-
-            const overlayContent = overlayElement.querySelector('#overlay-content');
-            if (overlayContent) {
-                overlayContent.insertBefore(emoji, overlayContent.firstChild);
-            }
-        }
-
         // 如果是新紀錄，添加特殊效果
         if (isNewRecord) {
             const existingRecord = overlayElement.querySelector('.new-record');
@@ -580,10 +556,7 @@ class EffectsManager {
 
                 const overlayContent = overlayElement.querySelector('#overlay-content');
                 if (overlayContent) {
-                    const emoji = overlayContent.querySelector('.victory-emoji');
-                    if (emoji) {
-                        emoji.parentNode.insertBefore(newRecordDiv, emoji.nextSibling);
-                    }
+                    overlayContent.insertBefore(newRecordDiv, overlayContent.firstChild);
                 }
             }
         }
@@ -677,9 +650,6 @@ class EffectsManager {
         if (!overlayElement) return;
 
         overlayElement.classList.remove('game-over', 'victory');
-
-        const emoji = overlayElement.querySelector('.game-over-emoji, .victory-emoji');
-        if (emoji) emoji.remove();
 
         const encourage = overlayElement.querySelector('.encourage-container');
         if (encourage) encourage.remove();
