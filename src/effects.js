@@ -8,7 +8,7 @@ class EffectsManager {
         this.backgroundEffects = document.getElementById('background-effects');
         this.confettiContainer = document.getElementById('confetti-container');
         this.bubbleCount = 0;
-        this.maxBubbles = 25;  // 增加泡泡數量
+        this.maxBubbles = 35;  // 大量泡泡
         this.starCount = 0;
         this.maxStars = 40;
 
@@ -72,8 +72,8 @@ class EffectsManager {
         this.createInitialBubbles();
         this.createInitialStars();
 
-        // 持續生成泡泡（更頻繁）
-        this.bubbleInterval = setInterval(() => this.createBubble(), 1500);
+        // 持續生成泡泡（非常頻繁）
+        this.bubbleInterval = setInterval(() => this.createBubble(), 800);
 
         // 持續生成星星
         this.starInterval = setInterval(() => this.createStar(), 1500);
@@ -277,10 +277,10 @@ class EffectsManager {
         return this.themeColors[this.currentTheme]?.[type] || this.themeColors.bubble[type];
     }
 
-    // 創建初始泡泡（更多初始泡泡）
+    // 創建初始泡泡（大量初始泡泡）
     createInitialBubbles() {
-        for (let i = 0; i < 12; i++) {
-            setTimeout(() => this.createBubble(), i * 300);
+        for (let i = 0; i < 20; i++) {
+            setTimeout(() => this.createBubble(), i * 200);
         }
     }
 
