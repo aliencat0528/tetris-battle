@@ -2,7 +2,7 @@
 
 一個現代化的俄羅斯方塊遊戲，支援**單人闯關**與**雙人對戰**模式，具有關卡系統、道具、障礙物等進階功能，使用純 HTML5 + CSS3 + JavaScript 實現。
 
-![Version](https://img.shields.io/badge/version-4.3.2-blue.svg)
+![Version](https://img.shields.io/badge/version-4.3.3-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
 ## 遊戲模式
@@ -614,7 +614,7 @@ open http://localhost:8100
 
 ### 🍬 霓虹糖果風
 - **背景特效**：斜向條紋 + 底部粉紫波浪動畫
-- **動態元素**：漂浮愛心💖💕與糖果🍬🍭，帶脈動與旋轉動畫
+- **動態元素**：漂浮愛心形狀（CSS 繪製），保留原有粉紫黃漸層與光暈效果
 - **配色**：粉色 (#ff96c8)、紫色 (#c896e8)、黃色 (#ffe664) 甜美色系
 
 ### 🚀 星際太空風
@@ -677,6 +677,12 @@ open http://localhost:8100
 - [ ] 測試高分榜儲存
 
 ## 版本歷史
+
+### v4.3.3 (2026-01-22)
+- **糖果主題愛心形狀**
+  - 使用 CSS clip-path 將泡泡改為愛心形狀
+  - 完整保留原有漸層、透明度、光暈、動畫效果
+  - 愛心帶高光反射效果
 
 ### v4.3.2 (2026-01-22)
 - **糖果主題視覺升級**
