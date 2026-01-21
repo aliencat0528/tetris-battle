@@ -2328,3 +2328,390 @@ header h1 {
         filter: brightness(1);
     }
 }
+
+/* ============================================
+   主題切換系統 - Theme Switching System
+   ============================================ */
+
+/* 主題切換按鈕 */
+#theme-switcher {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 2000;
+    display: flex;
+    gap: 10px;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 10px 15px;
+    border-radius: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+#theme-switcher .theme-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+#theme-switcher .theme-btn:hover {
+    transform: scale(1.15);
+    border-color: rgba(255, 255, 255, 0.8);
+}
+
+#theme-switcher .theme-btn.active {
+    border-color: #fff;
+    box-shadow: 0 0 15px currentColor;
+}
+
+#theme-switcher .theme-btn.active::after {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    right: -4px;
+    bottom: -4px;
+    border: 2px solid currentColor;
+    border-radius: 50%;
+    animation: themePulse 1.5s ease-in-out infinite;
+}
+
+@keyframes themePulse {
+    0%, 100% { opacity: 0.5; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.1); }
+}
+
+#theme-switcher .theme-bubble {
+    background: linear-gradient(135deg, #00d4ff, #9b59b6);
+}
+
+#theme-switcher .theme-candy {
+    background: linear-gradient(135deg, #ff6b9d, #ffd93d, #6bcb77);
+}
+
+#theme-switcher .theme-space {
+    background: linear-gradient(135deg, #1a1a2e, #4a00e0, #8e2de2);
+}
+
+#theme-label {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.8rem;
+    margin-right: 5px;
+    align-self: center;
+}
+
+/* ============================================
+   霓虹糖果風格 - Neon Candy Theme
+   ============================================ */
+
+body.theme-candy {
+    background: linear-gradient(135deg, #1a1a2e 0%, #2d1b4e 50%, #1a1a2e 100%);
+}
+
+body.theme-candy #background-effects {
+    background: radial-gradient(ellipse at top, rgba(255, 107, 157, 0.1), transparent 50%),
+                radial-gradient(ellipse at bottom, rgba(255, 217, 61, 0.1), transparent 50%);
+}
+
+/* 糖果泡泡 */
+body.theme-candy .bubble {
+    background: radial-gradient(circle at 30% 30%,
+        rgba(255, 255, 255, 0.5),
+        rgba(255, 107, 157, 0.3) 40%,
+        rgba(255, 217, 61, 0.2) 60%,
+        transparent 70%);
+    box-shadow:
+        inset 0 0 20px rgba(255, 255, 255, 0.4),
+        0 0 15px rgba(255, 107, 157, 0.3);
+}
+
+/* 糖果星星 */
+body.theme-candy .star {
+    background: #ffd93d;
+    box-shadow:
+        0 0 6px 2px rgba(255, 217, 61, 0.8),
+        0 0 12px 4px rgba(255, 107, 157, 0.5),
+        0 0 20px 6px rgba(107, 203, 119, 0.3);
+}
+
+/* 糖果光暈 */
+body.theme-candy .glow-orb.cyan {
+    background: radial-gradient(circle, #ff6b9d, transparent 70%);
+}
+
+body.theme-candy .glow-orb.purple {
+    background: radial-gradient(circle, #ffd93d, transparent 70%);
+}
+
+body.theme-candy .glow-orb.pink {
+    background: radial-gradient(circle, #6bcb77, transparent 70%);
+}
+
+/* 糖果按鈕 */
+body.theme-candy .mode-btn {
+    background: rgba(255, 107, 157, 0.1);
+    border: 2px solid rgba(255, 107, 157, 0.4);
+    box-shadow:
+        0 0 20px rgba(255, 107, 157, 0.2),
+        inset 0 0 30px rgba(255, 255, 255, 0.05);
+}
+
+body.theme-candy .mode-btn:hover {
+    background: rgba(255, 217, 61, 0.15);
+    border-color: rgba(255, 217, 61, 0.7);
+    box-shadow:
+        0 0 30px rgba(255, 217, 61, 0.4),
+        0 0 60px rgba(255, 107, 157, 0.2);
+    animation: candyBounce 0.5s ease;
+}
+
+@keyframes candyBounce {
+    0%, 100% { transform: translateY(-5px) scale(1); }
+    50% { transform: translateY(-10px) scale(1.02); }
+}
+
+/* 糖果標題 - 保留漸層但改變顏色 */
+body.theme-candy header h1 {
+    background: linear-gradient(90deg, #ff6b9d, #ffd93d, #6bcb77);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: candyGradient 3s linear infinite, titleGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes candyGradient {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+}
+
+body.theme-candy #mode-selection-content h2 {
+    background: linear-gradient(90deg, #ff6b9d, #ffd93d, #6bcb77);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: candyGradient 3s linear infinite;
+}
+
+/* 糖果裝飾表情 */
+body.theme-candy .floating-emoji {
+    filter: drop-shadow(0 0 8px rgba(255, 217, 61, 0.6));
+}
+
+/* 糖果遊戲面板 */
+body.theme-candy #board-section::before {
+    background: linear-gradient(45deg, #ff6b9d, #ffd93d, #6bcb77, #ff6b9d);
+}
+
+body.theme-candy #hold-section,
+body.theme-candy #next-section {
+    border-color: rgba(255, 107, 157, 0.3);
+    box-shadow: 0 0 15px rgba(255, 107, 157, 0.15);
+}
+
+body.theme-candy #hold-section h3,
+body.theme-candy #next-section h3,
+body.theme-candy #items-section h3 {
+    background: linear-gradient(90deg, #ff6b9d, #ffd93d);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+/* 糖果進度條 */
+body.theme-candy #progress-fill {
+    background: linear-gradient(90deg, #ff6b9d, #ffd93d, #6bcb77);
+}
+
+/* 糖果彩紙顏色 */
+body.theme-candy .confetti {
+    filter: brightness(1.2);
+}
+
+/* ============================================
+   太空星際風格 - Space Galaxy Theme
+   ============================================ */
+
+body.theme-space {
+    background: linear-gradient(135deg, #0d0d1a 0%, #1a0a2e 50%, #0d0d1a 100%);
+}
+
+body.theme-space #background-effects {
+    background:
+        radial-gradient(ellipse at 20% 30%, rgba(138, 43, 226, 0.15), transparent 40%),
+        radial-gradient(ellipse at 80% 70%, rgba(75, 0, 130, 0.15), transparent 40%),
+        radial-gradient(ellipse at 50% 50%, rgba(30, 144, 255, 0.1), transparent 60%);
+}
+
+/* 太空泡泡 - 星雲效果 */
+body.theme-space .bubble {
+    background: radial-gradient(circle at 30% 30%,
+        rgba(255, 255, 255, 0.3),
+        rgba(138, 43, 226, 0.2) 40%,
+        rgba(75, 0, 130, 0.1) 60%,
+        transparent 70%);
+    box-shadow:
+        inset 0 0 25px rgba(138, 43, 226, 0.3),
+        0 0 20px rgba(138, 43, 226, 0.2);
+    animation: floatBubble linear infinite, nebulaGlow 4s ease-in-out infinite;
+}
+
+@keyframes nebulaGlow {
+    0%, 100% { filter: hue-rotate(0deg); }
+    50% { filter: hue-rotate(30deg); }
+}
+
+/* 太空星星 - 更亮更閃 */
+body.theme-space .star {
+    background: #fff;
+    box-shadow:
+        0 0 8px 3px rgba(255, 255, 255, 0.9),
+        0 0 15px 5px rgba(138, 43, 226, 0.6),
+        0 0 25px 8px rgba(30, 144, 255, 0.4);
+}
+
+body.theme-space .star.large {
+    animation: twinkle ease-in-out infinite, starShoot 8s ease-in-out infinite;
+}
+
+@keyframes starShoot {
+    0%, 90%, 100% { transform: translateX(0) translateY(0); }
+    95% { transform: translateX(20px) translateY(-10px); }
+}
+
+/* 太空光暈 - 星雲色 */
+body.theme-space .glow-orb.cyan {
+    background: radial-gradient(circle, rgba(138, 43, 226, 0.6), transparent 70%);
+}
+
+body.theme-space .glow-orb.purple {
+    background: radial-gradient(circle, rgba(75, 0, 130, 0.6), transparent 70%);
+}
+
+body.theme-space .glow-orb.pink {
+    background: radial-gradient(circle, rgba(30, 144, 255, 0.5), transparent 70%);
+}
+
+/* 太空按鈕 */
+body.theme-space .mode-btn {
+    background: rgba(138, 43, 226, 0.1);
+    border: 2px solid rgba(138, 43, 226, 0.4);
+    box-shadow:
+        0 0 25px rgba(138, 43, 226, 0.2),
+        inset 0 0 40px rgba(75, 0, 130, 0.1);
+}
+
+body.theme-space .mode-btn:hover {
+    background: rgba(138, 43, 226, 0.2);
+    border-color: rgba(138, 43, 226, 0.8);
+    box-shadow:
+        0 0 40px rgba(138, 43, 226, 0.4),
+        0 0 80px rgba(30, 144, 255, 0.2),
+        inset 0 0 40px rgba(255, 255, 255, 0.05);
+}
+
+/* 太空標題 */
+body.theme-space header h1 {
+    background: linear-gradient(90deg, #8a2be2, #4169e1, #1e90ff, #8a2be2);
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: spaceGradient 4s linear infinite, titleGlow 3s ease-in-out infinite alternate;
+    text-shadow: 0 0 30px rgba(138, 43, 226, 0.8);
+}
+
+@keyframes spaceGradient {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 300% 50%; }
+}
+
+body.theme-space #mode-selection-content h2 {
+    background: linear-gradient(90deg, #8a2be2, #4169e1, #1e90ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+/* 太空裝飾 */
+body.theme-space .floating-emoji {
+    filter: drop-shadow(0 0 10px rgba(138, 43, 226, 0.8));
+}
+
+body.theme-space .corner-decoration.top-left,
+body.theme-space .corner-decoration.bottom-right {
+    background: radial-gradient(circle at center, rgba(138, 43, 226, 0.3), transparent 70%);
+}
+
+body.theme-space .corner-decoration.top-right,
+body.theme-space .corner-decoration.bottom-left {
+    background: radial-gradient(circle at center, rgba(30, 144, 255, 0.3), transparent 70%);
+}
+
+/* 太空遊戲面板 */
+body.theme-space #board-section::before {
+    background: linear-gradient(45deg, #8a2be2, #4169e1, #1e90ff, #8a2be2);
+}
+
+body.theme-space #hold-section,
+body.theme-space #next-section {
+    border-color: rgba(138, 43, 226, 0.3);
+    box-shadow:
+        0 0 20px rgba(138, 43, 226, 0.15),
+        inset 0 0 30px rgba(75, 0, 130, 0.1);
+}
+
+body.theme-space #hold-section h3,
+body.theme-space #next-section h3,
+body.theme-space #items-section h3 {
+    background: linear-gradient(90deg, #8a2be2, #1e90ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+/* 太空進度條 */
+body.theme-space #progress-fill {
+    background: linear-gradient(90deg, #8a2be2, #4169e1, #1e90ff);
+}
+
+/* 流星效果 */
+body.theme-space .meteor {
+    position: absolute;
+    width: 2px;
+    height: 80px;
+    background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.8), transparent);
+    transform: rotate(-45deg);
+    animation: meteorFall 2s linear forwards;
+    pointer-events: none;
+}
+
+@keyframes meteorFall {
+    0% {
+        opacity: 0;
+        transform: translateX(0) translateY(0) rotate(-45deg);
+    }
+    10% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(300px) translateY(300px) rotate(-45deg);
+    }
+}
+
+/* 星座連線效果 */
+body.theme-space .constellation-line {
+    position: absolute;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    pointer-events: none;
+    animation: constellationFade 3s ease-in-out infinite;
+}
+
+@keyframes constellationFade {
+    0%, 100% { opacity: 0.2; }
+    50% { opacity: 0.5; }
+}

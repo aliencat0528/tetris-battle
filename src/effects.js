@@ -1,6 +1,6 @@
 /**
- * Tetris 夢幻泡泡風格特效系統
- * Dreamy Bubble Theme Effects System
+ * Tetris 主題特效系統
+ * Theme Effects System with Multiple Styles
  */
 
 class EffectsManager {
@@ -11,6 +11,28 @@ class EffectsManager {
         this.maxBubbles = 15;
         this.starCount = 0;
         this.maxStars = 30;
+
+        // 當前主題
+        this.currentTheme = 'bubble';
+
+        // 主題配色方案
+        this.themeColors = {
+            bubble: {
+                primary: ['#00d4ff', '#9b59b6', '#ff6b9d', '#ffd700'],
+                confetti: ['#00d4ff', '#9b59b6', '#ff6b9d', '#ffd700', '#2ecc71'],
+                soft: ['#ff9ff3', '#ffeaa7', '#74b9ff', '#a29bfe', '#dfe6e9']
+            },
+            candy: {
+                primary: ['#ff6b9d', '#ffd93d', '#6bcb77', '#4ecdc4'],
+                confetti: ['#ff6b9d', '#ffd93d', '#6bcb77', '#4ecdc4', '#ff9f43'],
+                soft: ['#ffcccc', '#fff3cd', '#d4edda', '#cce5ff']
+            },
+            space: {
+                primary: ['#8a2be2', '#4169e1', '#1e90ff', '#9370db'],
+                confetti: ['#8a2be2', '#4169e1', '#1e90ff', '#e040fb', '#7c4dff'],
+                soft: ['#e1bee7', '#c5cae9', '#bbdefb', '#b39ddb']
+            }
+        };
 
         // 鼓勵訊息列表
         this.encourageMessages = [
@@ -42,10 +64,148 @@ class EffectsManager {
         this.createInitialStars();
 
         // 持續生成泡泡
-        setInterval(() => this.createBubble(), 3000);
+        this.bubbleInterval = setInterval(() => this.createBubble(), 3000);
 
         // 持續生成星星
-        setInterval(() => this.createStar(), 2000);
+        this.starInterval = setInterval(() => this.createStar(), 2000);
+
+        // 太空主題流星
+        this.meteorInterval = null;
+
+        // 初始化主題切換器
+        this.initThemeSwitcher();
+
+        // 載入保存的主題
+        this.loadSavedTheme();
+    }
+
+    // 初始化主題切換器
+    initThemeSwitcher() {
+        const themeSwitcher = document.getElementById('theme-switcher');
+        if (!themeSwitcher) return;
+
+        const buttons = themeSwitcher.querySelectorAll('.theme-btn');
+        buttons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const theme = btn.dataset.theme;
+                this.switchTheme(theme);
+
+                // 更新按鈕狀態
+                buttons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+    }
+
+    // 載入保存的主題
+    loadSavedTheme() {
+        const savedTheme = localStorage.getItem('tetrisTheme');
+        if (savedTheme && ['bubble', 'candy', 'space'].includes(savedTheme)) {
+            this.switchTheme(savedTheme);
+
+            // 更新按鈕狀態
+            const buttons = document.querySelectorAll('.theme-btn');
+            buttons.forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.theme === savedTheme);
+            });
+        }
+    }
+
+    // 切換主題
+    switchTheme(theme) {
+        this.currentTheme = theme;
+        localStorage.setItem('tetrisTheme', theme);
+
+        // 移除舊主題 class
+        document.body.classList.remove('theme-bubble', 'theme-candy', 'theme-space');
+
+        // 添加新主題 class（bubble 是默認主題，不需要 class）
+        if (theme !== 'bubble') {
+            document.body.classList.add(`theme-${theme}`);
+        }
+
+        // 清理並重新創建背景效果
+        this.clearBackgroundEffects();
+        this.createInitialBubbles();
+        this.createInitialStars();
+
+        // 太空主題特殊效果
+        if (theme === 'space') {
+            this.startMeteorShower();
+        } else {
+            this.stopMeteorShower();
+        }
+
+        // 更新裝飾元素
+        this.updateDecorations(theme);
+
+        console.log(`Theme switched to: ${theme}`);
+    }
+
+    // 清理背景效果
+    clearBackgroundEffects() {
+        if (this.backgroundEffects) {
+            this.backgroundEffects.innerHTML = '';
+        }
+        this.bubbleCount = 0;
+        this.starCount = 0;
+    }
+
+    // 更新裝飾元素
+    updateDecorations(theme) {
+        const decorations = document.getElementById('decorations');
+        if (!decorations) return;
+
+        const emojis = decorations.querySelectorAll('.floating-emoji');
+        const emojiSets = {
+            bubble: ['⭐', '🌟', '✨', '💫', '🎮', '🎯'],
+            candy: ['🍭', '🍬', '🎀', '🌈', '🦄', '💖'],
+            space: ['🚀', '🌙', '⭐', '🛸', '🌠', '💫']
+        };
+
+        const selectedEmojis = emojiSets[theme] || emojiSets.bubble;
+        emojis.forEach((emoji, i) => {
+            emoji.textContent = selectedEmojis[i % selectedEmojis.length];
+        });
+    }
+
+    // 開始流星雨（太空主題）
+    startMeteorShower() {
+        if (this.meteorInterval) return;
+        this.meteorInterval = setInterval(() => {
+            if (this.currentTheme === 'space') {
+                this.createMeteor();
+            }
+        }, 4000);
+    }
+
+    // 停止流星雨
+    stopMeteorShower() {
+        if (this.meteorInterval) {
+            clearInterval(this.meteorInterval);
+            this.meteorInterval = null;
+        }
+    }
+
+    // 創建流星
+    createMeteor() {
+        const meteor = document.createElement('div');
+        meteor.className = 'meteor';
+
+        const startX = Math.random() * window.innerWidth * 0.7;
+        const startY = Math.random() * window.innerHeight * 0.3;
+
+        meteor.style.left = `${startX}px`;
+        meteor.style.top = `${startY}px`;
+
+        this.backgroundEffects.appendChild(meteor);
+
+        setTimeout(() => meteor.remove(), 2000);
+    }
+
+    // 獲取當前主題顏色
+    getColors(type = 'primary') {
+        return this.themeColors[this.currentTheme]?.[type] || this.themeColors.bubble[type];
     }
 
     // 創建初始泡泡
@@ -122,8 +282,7 @@ class EffectsManager {
 
     // 創建彩紙效果
     createConfetti(count = 50, colors = null) {
-        const defaultColors = ['#00d4ff', '#9b59b6', '#ff6b9d', '#ffd700', '#2ecc71', '#e74c3c'];
-        const confettiColors = colors || defaultColors;
+        const confettiColors = colors || this.getColors('confetti');
         const shapes = ['square', 'circle', 'star', 'heart'];
 
         for (let i = 0; i < count; i++) {
@@ -153,7 +312,7 @@ class EffectsManager {
 
     // 創建煙火效果
     createFirework(x, y, color = null) {
-        const colors = ['#00d4ff', '#9b59b6', '#ff6b9d', '#ffd700', '#2ecc71'];
+        const colors = this.getColors('primary');
         const fireworkColor = color || colors[Math.floor(Math.random() * colors.length)];
 
         const particleCount = 20;
@@ -197,6 +356,11 @@ class EffectsManager {
         sparkle.className = 'sparkle';
         sparkle.style.left = `${x}px`;
         sparkle.style.top = `${y}px`;
+
+        // 根據主題設置顏色
+        const colors = this.getColors('primary');
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        sparkle.style.setProperty('--sparkle-color', color);
 
         this.confettiContainer.appendChild(sparkle);
 
@@ -328,8 +492,8 @@ class EffectsManager {
             }
         }
 
-        // 播放溫柔的彩紙效果（較少、柔和的顏色）
-        this.createConfetti(30, ['#ff9ff3', '#ffeaa7', '#74b9ff', '#a29bfe', '#dfe6e9']);
+        // 播放溫柔的彩紙效果
+        this.createConfetti(30, this.getColors('soft'));
     }
 
     // 遊戲結束 - 勝利祝賀動畫
@@ -383,7 +547,7 @@ class EffectsManager {
         if (!boardElement) return;
 
         const rect = boardElement.getBoundingClientRect();
-        const colors = ['#00d4ff', '#9b59b6', '#ff6b9d', '#ffd700'];
+        const colors = this.getColors('primary');
 
         clearedRows.forEach((rowIndex, i) => {
             const y = rect.top + rowIndex * 30 + 15;
@@ -410,7 +574,7 @@ class EffectsManager {
             const centerY = rect.top + rect.height / 2;
 
             setTimeout(() => {
-                this.createFirework(centerX, centerY, '#ffd700');
+                this.createFirework(centerX, centerY, colors[0]);
                 this.createSparkles(centerX, centerY, 10);
             }, 200);
 
@@ -482,6 +646,16 @@ class EffectsManager {
     getRandomVictoryMessage() {
         return this.victoryMessages[Math.floor(Math.random() * this.victoryMessages.length)];
     }
+
+    // 獲取當前主題名稱
+    getCurrentThemeName() {
+        const names = {
+            bubble: '夢幻泡泡風',
+            candy: '霓虹糖果風',
+            space: '太空星際風'
+        };
+        return names[this.currentTheme] || '夢幻泡泡風';
+    }
 }
 
 // 全局實例
@@ -490,5 +664,5 @@ window.effectsManager = null;
 // 初始化
 document.addEventListener('DOMContentLoaded', () => {
     window.effectsManager = new EffectsManager();
-    console.log('Effects Manager initialized - Dreamy Bubble Theme');
+    console.log('Effects Manager initialized - Theme System Ready');
 });
