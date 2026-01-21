@@ -8,20 +8,20 @@ class EffectsManager {
         this.backgroundEffects = document.getElementById('background-effects');
         this.confettiContainer = document.getElementById('confetti-container');
         this.bubbleCount = 0;
-        this.maxBubbles = 12;
+        this.maxBubbles = 25;  // 增加泡泡數量
         this.starCount = 0;
         this.maxStars = 40;
 
         // 當前主題
         this.currentTheme = 'bubble';
 
-        // 主題配色方案 - 明亮色系
+        // 主題配色方案 - 夢幻淡色系
         this.themeColors = {
             bubble: {
-                // 白、黃、橘、淺藍
-                primary: ['#ffffff', '#ffd700', '#ffa500', '#87ceeb'],
-                confetti: ['#ffffff', '#ffd700', '#ffa500', '#87ceeb', '#ffec8b'],
-                soft: ['#fffacd', '#ffe4b5', '#b0e0e6', '#f0f8ff', '#fff8dc']
+                // 夢幻淡色系：淡粉、淡藍、淡黃、淡橘、白、淡紫
+                primary: ['#ffb6c1', '#87ceeb', '#fffacd', '#ffdab9', '#ffffff', '#e6e6fa'],
+                confetti: ['#ffb6c1', '#87ceeb', '#fffacd', '#ffdab9', '#ffffff', '#e6e6fa', '#f0fff0'],
+                soft: ['#fff0f5', '#f0f8ff', '#fffaf0', '#fff5ee', '#f8f8ff', '#faf0e6']
             },
             candy: {
                 // 粉、紫、黃
@@ -72,8 +72,8 @@ class EffectsManager {
         this.createInitialBubbles();
         this.createInitialStars();
 
-        // 持續生成泡泡
-        this.bubbleInterval = setInterval(() => this.createBubble(), 2500);
+        // 持續生成泡泡（更頻繁）
+        this.bubbleInterval = setInterval(() => this.createBubble(), 1500);
 
         // 持續生成星星
         this.starInterval = setInterval(() => this.createStar(), 1500);
@@ -277,10 +277,10 @@ class EffectsManager {
         return this.themeColors[this.currentTheme]?.[type] || this.themeColors.bubble[type];
     }
 
-    // 創建初始泡泡
+    // 創建初始泡泡（更多初始泡泡）
     createInitialBubbles() {
-        for (let i = 0; i < 6; i++) {
-            setTimeout(() => this.createBubble(), i * 400);
+        for (let i = 0; i < 12; i++) {
+            setTimeout(() => this.createBubble(), i * 300);
         }
     }
 
