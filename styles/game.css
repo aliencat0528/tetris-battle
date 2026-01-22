@@ -1814,6 +1814,12 @@ body:not(.theme-candy):not(.theme-space) #progress-fill {
     background: linear-gradient(90deg, #e060a0, #6080c0, #40c0a0, #e0a040);
 }
 
+/* 泡泡主題對戰計時器標籤 - 深藍紫色高對比 */
+body.theme-bubble .timer-label,
+body:not(.theme-candy):not(.theme-space) .timer-label {
+    color: #4040b0;
+}
+
 /* 泡泡主題遊戲面板邊框 */
 body.theme-bubble #board-section::before,
 body:not(.theme-candy):not(.theme-space) #board-section::before {
