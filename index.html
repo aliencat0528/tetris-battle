@@ -2317,9 +2317,14 @@
         restart() {
             this.inputHandler.stopAllRepeats();
             this.itemManager.clearAllDebuffs();
+            this.itemManager.reset();
             if (this.animationId) { cancelAnimationFrame(this.animationId); this.animationId = null; }
+            this.destroy();
+            window.tetrisGame = null;
+            // Return to mode selection
+            document.getElementById('single-player-container').classList.add('hidden');
+            document.getElementById('mode-selection').classList.remove('hidden');
             this.state = GAME_STATE.IDLE;
-            this.start();
         }
 
         gameOver() {
