@@ -7,11 +7,60 @@
     <link rel="stylesheet" href="styles/game.css">
 </head>
 <body>
+    <!-- 夢幻背景效果層 -->
+    <div id="background-effects">
+        <!-- 泡泡、星星將由 JS 動態生成 -->
+    </div>
+
+    <!-- 主題背景層 - 由 JS 根據主題動態管理 -->
+    <div id="theme-background"></div>
+
+    <!-- 彩紙效果容器 -->
+    <div class="confetti-container" id="confetti-container"></div>
+
+    <!-- 主題切換器 -->
+    <div id="theme-switcher">
+        <button class="theme-btn active" data-theme="bubble">
+            <span class="theme-icon">🫧</span>
+            <span class="theme-name">夢幻泡泡</span>
+        </button>
+        <button class="theme-btn" data-theme="candy">
+            <span class="theme-icon">🍬</span>
+            <span class="theme-name">霓虹糖果</span>
+        </button>
+        <button class="theme-btn" data-theme="space">
+            <span class="theme-icon">🚀</span>
+            <span class="theme-name">星際太空</span>
+        </button>
+    </div>
+
     <div id="game-container">
         <header>
             <h1>TETRIS</h1>
         </header>
 
+        <!-- 模式選擇畫面 -->
+        <div id="mode-selection">
+            <div id="mode-selection-content">
+                <h2>選擇遊戲模式</h2>
+                <div id="mode-buttons">
+                    <button id="single-mode-btn" class="mode-btn">
+                        <span class="mode-icon">🎮</span>
+                        <span class="mode-title">單人模式</span>
+                        <span class="mode-desc">經典俄羅斯方塊，挑戰關卡</span>
+                    </button>
+                    <button id="battle-mode-btn" class="mode-btn">
+                        <span class="mode-icon">⚔️</span>
+                        <span class="mode-title">雙人對戰</span>
+                        <span class="mode-desc">本地對戰，發送垃圾行擊敗對手</span>
+                    </button>
+                </div>
+                <p class="mode-hint">使用滑鼠點擊或按 1/2 選擇</p>
+            </div>
+        </div>
+
+        <!-- 單人模式容器 -->
+        <div id="single-player-container">
         <!-- 關卡資訊區 -->
         <div id="stage-info">
             <div id="stage-display">
@@ -159,21 +208,21 @@
                     <div class="help-section">
                         <h4>Hold 系統</h4>
                         <ul>
-                            <li><strong>Hold 空時</strong>：存入當前方塊</li>
-                            <li><strong>Hold 有方塊</strong>：取出使用，Hold 清空</li>
-                            <li>每個方塊落地前只能用一次</li>
+                            <li><strong>Hold 空時</strong>：存入當前方塊，生成下一個</li>
+                            <li><strong>Hold 有方塊</strong>：交換當前與 Hold 方塊</li>
+                            <li>⚠️ <strong>每個方塊只能 Hold 一次</strong>，落地後才能再用</li>
                         </ul>
                     </div>
                     <div class="help-section">
                         <h4>有利道具 <span class="item-hint">（綠色發光方塊）</span></h4>
                         <div class="item-list">
-                            <div class="item-entry">💣 <strong>炸彈</strong>：清除周圍 3×3 (45秒)</div>
-                            <div class="item-entry">⚡ <strong>消行器</strong>：清除最底行 (45秒)</div>
-                            <div class="item-entry">❄️ <strong>凍結</strong>：暫停下落 5 秒 (60秒)</div>
-                            <div class="item-entry">🔄 <strong>變形器</strong>：變成 I 型 (60秒)</div>
+                            <div class="item-entry">💣 <strong>炸彈</strong>：按鍵時清除方塊周圍 5×5 (45秒)</div>
+                            <div class="item-entry">⚡ <strong>消行器</strong>：立即清除最底行 (45秒)</div>
+                            <div class="item-entry">❄️ <strong>凍結</strong>：單人暫停下落/對戰凍結對手 (60秒)</div>
+                            <div class="item-entry">🔄 <strong>變形器</strong>：隨機變成另一種方塊 (60秒)</div>
                             <div class="item-entry">🔨 <strong>破壞鎚</strong>：清除所有障礙物 (60秒)</div>
                         </div>
-                        <p class="item-note">放置發光方塊後獲得，按 1-3 使用<br>括號內為道具保存時限</p>
+                        <p class="item-note">放置發光方塊後獲得，按 1-3 <strong>主動使用</strong><br>括號內為道具保存時限，過期消失</p>
                     </div>
                     <div class="help-section">
                         <h4>出局道具 <span class="item-hint bad">（紅色發光方塊）</span></h4>
@@ -194,9 +243,247 @@
                             <li>使用破壞鎚可全部清除</li>
                         </ul>
                     </div>
+                    <div class="help-section">
+                        <h4>垃圾行 <span class="item-hint bad">（定時挑戰）</span></h4>
+                        <ul>
+                            <li>每隔一段時間自動從底部升起</li>
+                            <li>關卡 1：每 30 秒 +1 行</li>
+                            <li>關卡 2：每 28 秒 +1 行</li>
+                            <li>關卡 3-4：每 25 秒 +1-2 行</li>
+                            <li>關卡 5+：每 20-15 秒 +2-3 行</li>
+                            <li>垃圾行會有一格空隙可消除</li>
+                        </ul>
+                    </div>
                 </div>
             </aside>
         </main>
+        </div><!-- End single-player-container -->
+
+        <!-- 對戰模式容器 -->
+        <div id="battle-container" class="hidden">
+            <!-- 對戰計時器 -->
+            <div id="battle-timer">
+                <span class="timer-label">剩餘時間</span>
+                <span id="battle-time-remaining">3:00</span>
+            </div>
+
+            <!-- 操作說明 -->
+            <div id="battle-controls-help">
+                <div class="controls-player">
+                    <strong>🎮 玩家 1 (左手)</strong>
+                    <span>移動: A/D | 軟降: S | 硬降: Space</span>
+                    <span>旋轉: W/X (順) Z (逆) | Hold: C</span>
+                    <span>道具: 1 / 2 / 3</span>
+                </div>
+                <div class="controls-player">
+                    <strong>🎮 玩家 2 (右手)</strong>
+                    <span>移動: ←/→ | 軟降: ↓ | 硬降: Enter</span>
+                    <span>旋轉: ↑ (順) / (逆) | Hold: 右Shift 或 .</span>
+                    <span>道具: 7 / 8 / 9</span>
+                </div>
+                <div class="controls-items">
+                    <strong>📦 道具（按鍵主動使用）</strong>
+                    <span>💣炸彈: 清除周圍5×5 | ⚡消行: 清底行 | 🔄變形: 隨機變形</span>
+                    <span>❄️凍結: <em>凍結對手5秒!</em> | 🔨破壞鎚: 清障礙</span>
+                </div>
+                <div class="controls-tips">
+                    <strong>💡 提示</strong>
+                    <span>Hold每塊只能用1次 | 消行送垃圾給對手 | 自動垃圾行每15秒</span>
+                </div>
+                <div class="controls-global">
+                    <span>暫停: P | 返回: R</span>
+                </div>
+            </div>
+
+            <div id="battle-area">
+                <!-- 玩家 1 (左側) -->
+                <div class="player-area" id="player1-area">
+                    <div class="player-header">
+                        <span class="player-name">玩家 1 (WASD)</span>
+                        <div class="player-stats-header">
+                            <span class="ko-display">KO: <span id="p1-ko">0</span></span>
+                            <span class="lines-sent-display">送出: <span id="p1-lines-sent">0</span></span>
+                        </div>
+                    </div>
+
+                    <div class="player-game-area">
+                        <!-- Hold -->
+                        <aside class="player-left-section">
+                            <div class="player-hold-section">
+                                <h4>HOLD</h4>
+                                <canvas id="p1-hold-canvas" width="80" height="80"></canvas>
+                            </div>
+                            <!-- 道具欄 -->
+                            <div class="player-items-section">
+                                <h4>道具</h4>
+                                <div class="player-item-slots" id="p1-item-slots">
+                                    <div class="item-slot" data-slot="1">
+                                        <span class="item-key">1</span>
+                                        <span class="item-icon"></span>
+                                        <span class="item-timer"></span>
+                                    </div>
+                                    <div class="item-slot" data-slot="2">
+                                        <span class="item-key">2</span>
+                                        <span class="item-icon"></span>
+                                        <span class="item-timer"></span>
+                                    </div>
+                                    <div class="item-slot" data-slot="3">
+                                        <span class="item-key">3</span>
+                                        <span class="item-icon"></span>
+                                        <span class="item-timer"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 待接收垃圾行指示 -->
+                            <div class="pending-garbage">
+                                <div class="garbage-bar" id="p1-garbage-bar"></div>
+                                <span class="garbage-count" id="p1-garbage-count">0</span>
+                            </div>
+                        </aside>
+
+                        <!-- 遊戲版面 -->
+                        <section class="player-board-section">
+                            <canvas id="p1-game-canvas"></canvas>
+                            <div class="effect-layer">
+                                <div class="combo-display hidden" id="p1-combo-display"></div>
+                                <div class="clear-type-display hidden" id="p1-clear-type-display"></div>
+                            </div>
+                        </section>
+
+                        <!-- Next 與資訊 -->
+                        <aside class="player-right-section">
+                            <div class="player-next-section">
+                                <h4>NEXT</h4>
+                                <canvas id="p1-next-canvas-1" width="60" height="60"></canvas>
+                                <canvas id="p1-next-canvas-2" width="60" height="60"></canvas>
+                                <canvas id="p1-next-canvas-3" width="60" height="60"></canvas>
+                            </div>
+                            <div class="player-stats-section">
+                                <div class="stat-item">
+                                    <span class="stat-label">分數</span>
+                                    <span class="stat-value" id="p1-score">0</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">消行</span>
+                                    <span class="stat-value" id="p1-lines">0</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">連擊</span>
+                                    <span class="stat-value" id="p1-combo">0</span>
+                                </div>
+                            </div>
+                        </aside>
+                    </div>
+                </div>
+
+                <!-- 中間 VS 標誌 -->
+                <div id="battle-vs">
+                    <span>VS</span>
+                </div>
+
+                <!-- 玩家 2 (右側) -->
+                <div class="player-area" id="player2-area">
+                    <div class="player-header">
+                        <span class="player-name">玩家 2 (方向鍵)</span>
+                        <div class="player-stats-header">
+                            <span class="ko-display">KO: <span id="p2-ko">0</span></span>
+                            <span class="lines-sent-display">送出: <span id="p2-lines-sent">0</span></span>
+                        </div>
+                    </div>
+
+                    <div class="player-game-area">
+                        <!-- Hold -->
+                        <aside class="player-left-section">
+                            <div class="player-hold-section">
+                                <h4>HOLD</h4>
+                                <canvas id="p2-hold-canvas" width="80" height="80"></canvas>
+                            </div>
+                            <!-- 道具欄 -->
+                            <div class="player-items-section">
+                                <h4>道具</h4>
+                                <div class="player-item-slots" id="p2-item-slots">
+                                    <div class="item-slot" data-slot="1">
+                                        <span class="item-key">7</span>
+                                        <span class="item-icon"></span>
+                                        <span class="item-timer"></span>
+                                    </div>
+                                    <div class="item-slot" data-slot="2">
+                                        <span class="item-key">8</span>
+                                        <span class="item-icon"></span>
+                                        <span class="item-timer"></span>
+                                    </div>
+                                    <div class="item-slot" data-slot="3">
+                                        <span class="item-key">9</span>
+                                        <span class="item-icon"></span>
+                                        <span class="item-timer"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 待接收垃圾行指示 -->
+                            <div class="pending-garbage">
+                                <div class="garbage-bar" id="p2-garbage-bar"></div>
+                                <span class="garbage-count" id="p2-garbage-count">0</span>
+                            </div>
+                        </aside>
+
+                        <!-- 遊戲版面 -->
+                        <section class="player-board-section">
+                            <canvas id="p2-game-canvas"></canvas>
+                            <div class="effect-layer">
+                                <div class="combo-display hidden" id="p2-combo-display"></div>
+                                <div class="clear-type-display hidden" id="p2-clear-type-display"></div>
+                            </div>
+                        </section>
+
+                        <!-- Next 與資訊 -->
+                        <aside class="player-right-section">
+                            <div class="player-next-section">
+                                <h4>NEXT</h4>
+                                <canvas id="p2-next-canvas-1" width="60" height="60"></canvas>
+                                <canvas id="p2-next-canvas-2" width="60" height="60"></canvas>
+                                <canvas id="p2-next-canvas-3" width="60" height="60"></canvas>
+                            </div>
+                            <div class="player-stats-section">
+                                <div class="stat-item">
+                                    <span class="stat-label">分數</span>
+                                    <span class="stat-value" id="p2-score">0</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">消行</span>
+                                    <span class="stat-value" id="p2-lines">0</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">連擊</span>
+                                    <span class="stat-value" id="p2-combo">0</span>
+                                </div>
+                            </div>
+                        </aside>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 對戰結束覆蓋層 -->
+            <div id="battle-overlay" class="hidden">
+                <div id="battle-overlay-content">
+                    <h2 id="battle-result-title">對戰結束</h2>
+                    <div id="battle-result-details">
+                        <div class="result-player">
+                            <span class="result-name">玩家 1</span>
+                            <span class="result-ko">KO: <span id="result-p1-ko">0</span></span>
+                            <span class="result-lines">送出: <span id="result-p1-lines">0</span></span>
+                        </div>
+                        <div class="result-vs">VS</div>
+                        <div class="result-player">
+                            <span class="result-name">玩家 2</span>
+                            <span class="result-ko">KO: <span id="result-p2-ko">0</span></span>
+                            <span class="result-lines">送出: <span id="result-p2-lines">0</span></span>
+                        </div>
+                    </div>
+                    <p id="battle-winner-text">玩家 1 獲勝！</p>
+                    <p class="battle-restart-hint">按 Enter 返回選單</p>
+                </div>
+            </div>
+        </div><!-- End battle-container -->
 
         <footer id="controls-hint">
             <p>← → 移動 | ↑ 旋轉 | ↓ 快降 | 空白鍵 瞬降 | C 存入/取出方塊 | 1-3 道具 | P 暫停 | R 重新開始</p>
@@ -232,60 +519,69 @@
             targetLines: 2,
             dropInterval: 1000,
             mission: '消除 2 行過關',
-            features: ['有利道具開始出現'],
+            features: ['有利道具開始出現', '每30秒出現垃圾行'],
             hasGoodItems: true,
             hasBadItems: false,
             hasObstacles: false,
             hasTimeLimit: false,
             goodItemChance: 0.15,
-            obstacleCount: 0
+            obstacleCount: 0,
+            garbageInterval: 30000,
+            garbageLines: 1
         },
         2: {
             name: '練習',
             targetLines: 3,
             dropInterval: 900,
             mission: '消除 3 行過關',
-            features: ['道具出現機率提升'],
+            features: ['道具出現機率提升', '垃圾行加快'],
             hasGoodItems: true,
             hasBadItems: false,
             hasObstacles: false,
             hasTimeLimit: false,
             goodItemChance: 0.20,
-            obstacleCount: 0
+            obstacleCount: 0,
+            garbageInterval: 25000,
+            garbageLines: 1
         },
         3: {
             name: '障礙',
             targetLines: 4,
             dropInterval: 800,
             mission: '消除 4 行過關',
-            features: ['石頭障礙物出現', '障礙物無法消除'],
+            features: ['石頭障礙物出現', '垃圾行持續'],
             hasGoodItems: true,
             hasBadItems: false,
             hasObstacles: true,
             hasTimeLimit: false,
             goodItemChance: 0.20,
-            obstacleCount: 5
+            obstacleCount: 5,
+            garbageInterval: 22000,
+            garbageLines: 1
         },
         4: {
             name: '限時',
             targetLines: 4,
             dropInterval: 700,
             mission: '消除 4 行過關',
-            features: ['每塊方塊有 8 秒放置時間', '超時方塊會消失'],
+            features: ['每塊方塊有 8 秒放置時間', '垃圾行1-2行'],
             hasGoodItems: true,
             hasBadItems: false,
             hasObstacles: true,
             hasTimeLimit: true,
             timeLimit: 8000,
             goodItemChance: 0.20,
-            obstacleCount: 4
+            obstacleCount: 4,
+            garbageInterval: 20000,
+            garbageLines: 1,
+            garbageLinesMax: 2
         },
         5: {
             name: '危機',
             targetLines: 5,
             dropInterval: 600,
             mission: '消除 5 行過關',
-            features: ['出局道具開始出現', '小心負面效果'],
+            features: ['出局道具開始出現', '垃圾行加劇'],
             hasGoodItems: true,
             hasBadItems: true,
             hasObstacles: true,
@@ -293,14 +589,17 @@
             timeLimit: 8000,
             goodItemChance: 0.18,
             badItemChance: 0.10,
-            obstacleCount: 4
+            obstacleCount: 4,
+            garbageInterval: 18000,
+            garbageLines: 1,
+            garbageLinesMax: 2
         },
         6: {
             name: '終極挑戰',
             targetLines: 5,
             dropInterval: 500,
             mission: '消除 5 行過關',
-            features: ['所有機制同時啟用', '速度最快', '祝你好運！'],
+            features: ['所有機制同時啟用', '垃圾行每15秒2行'],
             hasGoodItems: true,
             hasBadItems: true,
             hasObstacles: true,
@@ -308,7 +607,9 @@
             timeLimit: 8000,
             goodItemChance: 0.15,
             badItemChance: 0.12,
-            obstacleCount: 6
+            obstacleCount: 6,
+            garbageInterval: 15000,
+            garbageLines: 2
         }
     };
 
@@ -316,11 +617,11 @@
 
     // 道具定義（含時限：常見道具 45 秒，稀有道具 60 秒）
     const GOOD_ITEMS = {
-        bomb: { name: '炸彈', icon: '💣', description: '清除周圍 3×3 範圍', duration: 45000, rarity: 'common' },
-        lineClear: { name: '消行器', icon: '⚡', description: '清除最底下 1 行', duration: 45000, rarity: 'common' },
-        freeze: { name: '時間凍結', icon: '❄️', description: '暫停下落 5 秒', duration: 60000, rarity: 'rare' },
-        transform: { name: '變形器', icon: '🔄', description: '變成 I 型', duration: 60000, rarity: 'rare' },
-        hammer: { name: '破壞鎚', icon: '🔨', description: '清除所有障礙物', duration: 60000, rarity: 'rare' }
+        bomb: { name: '炸彈', icon: '💣', description: '清除周圍 5×5 範圍', duration: 45000, rarity: 'common', target: 'self' },
+        lineClear: { name: '消行器', icon: '⚡', description: '清除最底下 1 行', duration: 45000, rarity: 'common', target: 'self' },
+        freeze: { name: '時間凍結', icon: '❄️', description: '對戰：凍結對手 5 秒', duration: 60000, rarity: 'rare', target: 'opponent' },
+        transform: { name: '變形器', icon: '🔄', description: '隨機變成另一種方塊', duration: 60000, rarity: 'rare', target: 'self' },
+        hammer: { name: '破壞鎚', icon: '🔨', description: '清除所有障礙物', duration: 60000, rarity: 'rare', target: 'self' }
     };
 
     const BAD_ITEMS = {
@@ -391,6 +692,7 @@
     };
 
     const GAME_STATE = { IDLE: 'idle', PLAYING: 'playing', PAUSED: 'paused', GAME_OVER: 'game_over' };
+    const GAME_MODE = { SINGLE: 'single', BATTLE: 'battle' };
 
     const KEY_BINDINGS = {
         LEFT: ['ArrowLeft', 'KeyA'],
@@ -403,6 +705,46 @@
         PAUSE: ['KeyP', 'Escape'],
         RESTART: ['KeyR']
     };
+
+    // Battle mode key bindings for each player
+    const PLAYER_KEYS = {
+        1: {
+            LEFT: ['KeyA'],
+            RIGHT: ['KeyD'],
+            SOFT_DROP: ['KeyS'],
+            HARD_DROP: ['Space'],
+            ROTATE_CW: ['KeyW', 'KeyX'],
+            ROTATE_CCW: ['KeyZ'],
+            HOLD: ['KeyC'],
+            ITEM_1: ['Digit1'],
+            ITEM_2: ['Digit2'],
+            ITEM_3: ['Digit3']
+        },
+        2: {
+            LEFT: ['ArrowLeft'],
+            RIGHT: ['ArrowRight'],
+            SOFT_DROP: ['ArrowDown'],
+            HARD_DROP: ['Enter'],
+            ROTATE_CW: ['ArrowUp'],
+            ROTATE_CCW: ['Slash'],
+            HOLD: ['ShiftRight', 'Period'],
+            ITEM_1: ['Digit7', 'Numpad7'],
+            ITEM_2: ['Digit8', 'Numpad8'],
+            ITEM_3: ['Digit9', 'Numpad9']
+        }
+    };
+
+    // Garbage lines sent for each clear type
+    const GARBAGE_TABLE = {
+        1: 0,  // Single - no garbage
+        2: 1,  // Double - 1 garbage
+        3: 2,  // Triple - 2 garbage
+        4: 4   // Tetris - 4 garbage
+    };
+
+    // Battle mode settings
+    const BATTLE_DURATION = 180000; // 3 minutes
+    const BATTLE_PREVIEW_BLOCK_SIZE = 15;
 
     // ============== Piece Class ==============
     class Piece {
@@ -622,6 +964,27 @@
         }
 
         getObstacles() { return this.obstacles; }
+
+        // Add garbage lines from the bottom
+        addGarbageLines(count) {
+            for (let i = 0; i < count; i++) {
+                // Remove top row
+                this.grid.shift();
+                // Create garbage row with one random gap
+                const gapColumn = Math.floor(Math.random() * this.cols);
+                const garbageRow = Array(this.cols).fill('garbage');
+                garbageRow[gapColumn] = null; // The gap
+                // Add to bottom
+                this.grid.push(garbageRow);
+
+                // Update obstacle positions (move them up)
+                this.obstacles.forEach(o => {
+                    o.y--;
+                });
+                // Remove obstacles that went off the top
+                this.obstacles = this.obstacles.filter(o => o.y >= 0);
+            }
+        }
     }
 
     // ============== Renderer Class ==============
@@ -906,6 +1269,57 @@
             }
         }
 
+        // 顯示變形器方塊選擇介面
+        showTransformChoice(onSelect) {
+            let choiceDiv = document.getElementById('transform-choice');
+            if (!choiceDiv) {
+                choiceDiv = document.createElement('div');
+                choiceDiv.id = 'transform-choice';
+                document.getElementById('game-container').appendChild(choiceDiv);
+            }
+
+            const pieceTypes = [
+                { key: 'I', name: 'I', color: '#00d4ff' },
+                { key: 'O', name: 'O', color: '#ffd700' },
+                { key: 'T', name: 'T', color: '#9b59b6' },
+                { key: 'S', name: 'S', color: '#2ecc71' },
+                { key: 'Z', name: 'Z', color: '#ff4444' },
+                { key: 'J', name: 'J', color: '#3498db' },
+                { key: 'L', name: 'L', color: '#ff8c00' }
+            ];
+
+            choiceDiv.innerHTML = `
+                <h3>🔄 選擇要變形的方塊</h3>
+                <div class="piece-options">
+                    ${pieceTypes.map(p => `
+                        <button class="piece-btn" data-piece="${p.key}">
+                            <span class="piece-key">${p.key}</span>
+                            <span class="piece-name">${p.name}</span>
+                        </button>
+                    `).join('')}
+                </div>
+                <p class="choice-hint">點擊或按 I/O/T/S/Z/J/L 選擇，按 Esc 取消</p>
+            `;
+            choiceDiv.classList.add('show');
+
+            // 添加按鈕點擊事件
+            choiceDiv.querySelectorAll('.piece-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const pieceType = btn.dataset.piece;
+                    this.hideTransformChoice();
+                    if (onSelect) onSelect(pieceType);
+                });
+            });
+        }
+
+        // 隱藏變形器方塊選擇介面
+        hideTransformChoice() {
+            const choiceDiv = document.getElementById('transform-choice');
+            if (choiceDiv) {
+                choiceDiv.classList.remove('show');
+            }
+        }
+
         updateDebuffs(debuffs) {
             const debuffKeys = Object.keys(debuffs);
             if (debuffKeys.length === 0) {
@@ -921,17 +1335,38 @@
         }
 
         showEffect(type, value) {
-            let el, className;
+            let el, className, clearTypeClass = '', duration = 1500;
             switch (type) {
                 case 'combo':
                     el = this.comboDisplay;
                     el.textContent = value + ' COMBO!';
                     className = 'show-combo';
+                    // Add screen shake for high combos
+                    if (value >= 3) {
+                        this.shakeScreen(value >= 5 ? 'tetris' : 'normal');
+                    }
                     break;
                 case 'clear':
                     el = this.clearTypeDisplay;
                     el.textContent = value;
                     className = 'show-clear';
+                    // Add specific class based on clear type
+                    if (value === 'SINGLE') {
+                        clearTypeClass = 'clear-single';
+                        duration = 1300;
+                    } else if (value === 'DOUBLE') {
+                        clearTypeClass = 'clear-double';
+                        duration = 1600;
+                        this.shakeScreen('normal');
+                    } else if (value === 'TRIPLE') {
+                        clearTypeClass = 'clear-triple';
+                        duration = 1900;
+                        this.shakeScreen('normal');
+                    } else if (value === 'TETRIS') {
+                        clearTypeClass = 'clear-tetris';
+                        duration = 2200;
+                        this.shakeScreen('tetris');
+                    }
                     break;
                 case 'item':
                 case 'debuff':
@@ -948,14 +1383,31 @@
                 clearTimeout(this.effectTimers[type]);
             }
 
-            el.classList.remove('hidden', 'show-combo', 'show-clear', 'show-debuff');
+            el.classList.remove('hidden', 'show-combo', 'show-clear', 'show-debuff',
+                'clear-single', 'clear-double', 'clear-triple', 'clear-tetris');
             void el.offsetWidth; // 觸發重繪
             el.classList.add(className);
+            if (clearTypeClass) el.classList.add(clearTypeClass);
 
             this.effectTimers[type] = setTimeout(() => {
                 el.classList.add('hidden');
                 el.classList.remove(className);
-            }, 1500);
+                if (clearTypeClass) el.classList.remove(clearTypeClass);
+            }, duration);
+        }
+
+        shakeScreen(intensity = 'normal') {
+            const canvas = this.gameCanvas;
+            canvas.classList.remove('shake', 'tetris-shake');
+            void canvas.offsetWidth; // Force reflow
+            if (intensity === 'tetris') {
+                canvas.classList.add('tetris-shake');
+            } else {
+                canvas.classList.add('shake');
+            }
+            setTimeout(() => {
+                canvas.classList.remove('shake', 'tetris-shake');
+            }, intensity === 'tetris' ? 500 : 300);
         }
 
         showOverlay(title, msg, scores = null) {
@@ -970,7 +1422,13 @@
             this.overlay.classList.remove('hidden');
         }
 
-        hideOverlay() { this.overlay.classList.add('hidden'); }
+        hideOverlay() {
+            this.overlay.classList.add('hidden');
+            // 清理特效元素
+            if (window.effectsManager) {
+                window.effectsManager.cleanupOverlay(this.overlay);
+            }
+        }
 
         render(board, piece, ghostY, holdPiece, canHold, nextPieces, hasFog = false) {
             this.clearGameCanvas();
@@ -1027,6 +1485,13 @@
         getGoodItemChance() { return this.getStageConfig().goodItemChance || 0; }
         getBadItemChance() { return this.getStageConfig().badItemChance || 0; }
         getObstacleCount() { return this.getStageConfig().obstacleCount || 0; }
+        getGarbageInterval() { return this.getStageConfig().garbageInterval || 30000; }
+        getGarbageLines() {
+            const config = this.getStageConfig();
+            const min = config.garbageLines || 1;
+            const max = config.garbageLinesMax || min;
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
     }
 
     // ============== ItemManager Class ==============
@@ -1235,8 +1700,16 @@
             this.cb = cb;
             this.keys = {};
             this.repeatTimers = {};
-            document.addEventListener('keydown', e => this.onKeyDown(e));
-            document.addEventListener('keyup', e => this.onKeyUp(e));
+            this.boundKeyDown = e => this.onKeyDown(e);
+            this.boundKeyUp = e => this.onKeyUp(e);
+            document.addEventListener('keydown', this.boundKeyDown);
+            document.addEventListener('keyup', this.boundKeyUp);
+        }
+
+        destroy() {
+            document.removeEventListener('keydown', this.boundKeyDown);
+            document.removeEventListener('keyup', this.boundKeyUp);
+            this.stopAllRepeats();
         }
 
         onKeyDown(e) {
@@ -1341,6 +1814,9 @@
             this.currentPieceHasItem = false;
             this.currentItemType = null;
 
+            // 垃圾行計時
+            this.lastGarbageTime = 0;
+
             this.inputHandler = new InputHandler({
                 onLeft: () => this.moveLeft(),
                 onRight: () => this.moveRight(),
@@ -1405,6 +1881,7 @@
             this.state = GAME_STATE.PLAYING;
             this.lastTime = performance.now();
             this.lastDropTime = this.lastTime;
+            this.lastGarbageTime = this.lastTime;
             this.gameLoop(this.lastTime);
         }
 
@@ -1426,6 +1903,15 @@
             // 檢查凍結效果
             if (this.isFrozen && time >= this.freezeEndTime) {
                 this.isFrozen = false;
+            }
+
+            // 自動垃圾行（根據關卡設定）
+            const garbageInterval = this.stageManager.getGarbageInterval();
+            if (garbageInterval > 0 && time - this.lastGarbageTime >= garbageInterval) {
+                const lines = this.stageManager.getGarbageLines();
+                this.board.addGarbageLines(lines);
+                this.renderer.showEffect('debuff', `垃圾行 +${lines}`);
+                this.lastGarbageTime = time;
             }
 
             if (!this.currentPiece) return;
@@ -1655,9 +2141,9 @@
 
         useBomb() {
             if (!this.currentPiece) return;
-            const centerX = this.currentPiece.x + 1;
-            const centerY = this.currentPiece.y + 1;
-            this.board.clearArea(centerX - 1, centerY - 1, 3, 3);
+            const centerX = this.currentPiece.x + 2;
+            const centerY = this.currentPiece.y + 2;
+            this.board.clearArea(centerX - 2, centerY - 2, 5, 5);
         }
 
         useLineClear() {
@@ -1674,12 +2160,19 @@
             if (!this.currentPiece) return;
             const x = this.currentPiece.x;
             const y = this.currentPiece.y;
-            this.currentPiece = new Piece('I');
+            const currentType = this.currentPiece.type;
+            // 隨機選擇一個不同的方塊類型
+            let newType;
+            do {
+                newType = PIECE_TYPES[Math.floor(Math.random() * PIECE_TYPES.length)];
+            } while (newType === currentType);
+            this.currentPiece = new Piece(newType);
             this.currentPiece.setPosition(x, y);
             // 確保新方塊不會碰撞
             if (this.board.collides(this.currentPiece, 0, 0)) {
                 this.currentPiece.setPosition(this.board.getSpawnX(this.currentPiece), this.board.getSpawnY());
             }
+            this.renderer.showEffect('item', `變成 ${newType} 型方塊`);
         }
 
         useHammer() {
@@ -1745,9 +2238,22 @@
 
             if (result.clearType) {
                 this.renderer.showEffect('clear', result.clearType);
+
+                // 播放增強消行特效
+                if (window.effectsManager && count > 0) {
+                    const boardElement = document.getElementById('game-canvas');
+                    const clearedRows = this.board.getLastClearedRows ? this.board.getLastClearedRows() : [];
+                    const clearType = result.clearType.toLowerCase();
+                    window.effectsManager.enhancedLineClear(boardElement, clearedRows, clearType);
+                }
             }
             if (result.combo > 1) {
                 this.renderer.showEffect('combo', result.combo);
+
+                // 連擊特效
+                if (window.effectsManager) {
+                    window.effectsManager.comboEffect(result.combo);
+                }
             }
 
             // 更新關卡進度
@@ -1773,6 +2279,11 @@
                 this.initObstacles();
             }
             this.renderer.showEffect('stage', '關卡 ' + newStage);
+
+            // 播放關卡完成特效
+            if (window.effectsManager) {
+                window.effectsManager.stageCompleteEffect();
+            }
         }
 
         updateUI() {
@@ -1824,6 +2335,14 @@
             if (r.added && r.rank <= 3) msg += `\n新紀錄！第 ${r.rank} 名！`;
             msg += '\n按 Enter 重新開始';
             this.renderer.showOverlay('GAME OVER', msg, r.scores);
+
+            // 播放失敗鼓勵動畫
+            setTimeout(() => {
+                const overlay = document.getElementById('overlay');
+                if (window.effectsManager && overlay) {
+                    window.effectsManager.showGameOverEncouragement(overlay, score);
+                }
+            }, 100);
         }
 
         gameComplete() {
@@ -1834,15 +2353,1172 @@
             const score = this.scoreManager.getScore();
             const r = this.scoreManager.addHighScore(score);
             let msg = `恭喜通關所有關卡！\n最終分數：${score.toLocaleString()}`;
-            if (r.added && r.rank <= 3) msg += `\n新紀錄！第 ${r.rank} 名！`;
+            const isNewRecord = r.added && r.rank <= 3;
+            if (isNewRecord) msg += `\n新紀錄！第 ${r.rank} 名！`;
             msg += '\n按 Enter 重新開始';
             this.renderer.showOverlay('恭喜通關！', msg, r.scores);
+
+            // 播放勝利祝賀動畫
+            setTimeout(() => {
+                const overlay = document.getElementById('overlay');
+                if (window.effectsManager && overlay) {
+                    window.effectsManager.showVictoryCelebration(overlay, isNewRecord);
+                }
+            }, 100);
+        }
+
+        destroy() {
+            this.inputHandler.destroy();
+            this.itemManager.clearAllDebuffs();
+            if (this.animationId) { cancelAnimationFrame(this.animationId); this.animationId = null; }
+        }
+    }
+
+    // ============== Battle Mode Classes ==============
+
+    // Player Renderer for battle mode (handles one player's canvases)
+    class PlayerRenderer {
+        constructor(playerId) {
+            this.playerId = playerId;
+            const prefix = `p${playerId}`;
+
+            this.gameCanvas = document.getElementById(`${prefix}-game-canvas`);
+            this.gameCtx = this.gameCanvas.getContext('2d');
+            this.holdCanvas = document.getElementById(`${prefix}-hold-canvas`);
+            this.holdCtx = this.holdCanvas.getContext('2d');
+            this.nextCanvases = [
+                document.getElementById(`${prefix}-next-canvas-1`),
+                document.getElementById(`${prefix}-next-canvas-2`),
+                document.getElementById(`${prefix}-next-canvas-3`)
+            ];
+            this.nextCtxs = this.nextCanvases.map(c => c.getContext('2d'));
+
+            this.scoreEl = document.getElementById(`${prefix}-score`);
+            this.linesEl = document.getElementById(`${prefix}-lines`);
+            this.comboEl = document.getElementById(`${prefix}-combo`);
+            this.koEl = document.getElementById(`${prefix}-ko`);
+            this.linesSentEl = document.getElementById(`${prefix}-lines-sent`);
+            this.garbageBar = document.getElementById(`${prefix}-garbage-bar`);
+            this.garbageCount = document.getElementById(`${prefix}-garbage-count`);
+            this.comboDisplay = document.getElementById(`${prefix}-combo-display`);
+            this.clearTypeDisplay = document.getElementById(`${prefix}-clear-type-display`);
+            this.itemSlots = document.querySelectorAll(`#${prefix}-item-slots .item-slot`);
+
+            // Set canvas size
+            this.gameCanvas.width = COLS * BLOCK_SIZE;
+            this.gameCanvas.height = ROWS * BLOCK_SIZE;
+            this.holdCanvas.width = this.holdCanvas.height = 4 * BATTLE_PREVIEW_BLOCK_SIZE + 10;
+            this.nextCanvases.forEach(c => {
+                c.width = c.height = 4 * BATTLE_PREVIEW_BLOCK_SIZE + 10;
+            });
+
+            this.effectTimers = {};
+        }
+
+        clearGameCanvas() {
+            this.gameCtx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+            this.gameCtx.fillRect(0, 0, this.gameCanvas.width, this.gameCanvas.height);
+        }
+
+        drawGrid() {
+            this.gameCtx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+            this.gameCtx.lineWidth = 1;
+            for (let x = 0; x <= COLS; x++) {
+                this.gameCtx.beginPath();
+                this.gameCtx.moveTo(x * BLOCK_SIZE, 0);
+                this.gameCtx.lineTo(x * BLOCK_SIZE, ROWS * BLOCK_SIZE);
+                this.gameCtx.stroke();
+            }
+            for (let y = 0; y <= ROWS; y++) {
+                this.gameCtx.beginPath();
+                this.gameCtx.moveTo(0, y * BLOCK_SIZE);
+                this.gameCtx.lineTo(COLS * BLOCK_SIZE, y * BLOCK_SIZE);
+                this.gameCtx.stroke();
+            }
+        }
+
+        drawBlock(ctx, x, y, color, size = BLOCK_SIZE, isGhost = false, isGarbage = false) {
+            const p = 1, inner = size - p * 2;
+            if (isGhost) {
+                ctx.strokeStyle = COLORS.ghost;
+                ctx.lineWidth = 2;
+                ctx.strokeRect(x * size + p, y * size + p, inner, inner);
+            } else if (isGarbage) {
+                // Garbage block - gray with pattern
+                ctx.fillStyle = '#4a4a4a';
+                ctx.fillRect(x * size + p, y * size + p, inner, inner);
+                ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                ctx.fillRect(x * size + p + 2, y * size + p + 2, 4, 4);
+                ctx.fillStyle = 'rgba(0,0,0,0.2)';
+                ctx.fillRect(x * size + size - p - 6, y * size + size - p - 6, 4, 4);
+            } else {
+                ctx.fillStyle = color;
+                ctx.fillRect(x * size + p, y * size + p, inner, inner);
+                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                ctx.fillRect(x * size + p, y * size + p, inner, 3);
+                ctx.fillRect(x * size + p, y * size + p, 3, inner);
+                ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                ctx.fillRect(x * size + p, y * size + size - p - 3, inner, 3);
+                ctx.fillRect(x * size + size - p - 3, y * size + p, 3, inner);
+            }
+        }
+
+        drawBoard(board) {
+            board.forEachCell((x, y, color) => {
+                if (color === 'garbage') {
+                    this.drawBlock(this.gameCtx, x, y, null, BLOCK_SIZE, false, true);
+                } else if (color === 'obstacle') {
+                    this.drawBlock(this.gameCtx, x, y, COLORS.obstacle, BLOCK_SIZE, false, false);
+                } else {
+                    this.drawBlock(this.gameCtx, x, y, color);
+                }
+            });
+        }
+
+        drawPiece(piece) {
+            if (!piece) return;
+            let color = piece.color;
+            if (piece.isItemPiece) {
+                color = piece.itemType === 'good' ? COLORS.item_good : COLORS.item_bad;
+            }
+            piece.forEachBlock((lx, ly, gx, gy) => {
+                if (gy >= 0) this.drawBlock(this.gameCtx, gx, gy, color);
+            });
+            if (piece.isItemPiece) {
+                const glowColor = piece.itemType === 'good' ? 'rgba(0, 255, 136, 0.6)' : 'rgba(255, 68, 68, 0.6)';
+                piece.forEachBlock((lx, ly, gx, gy) => {
+                    if (gy >= 0) {
+                        this.gameCtx.strokeStyle = glowColor;
+                        this.gameCtx.lineWidth = 2;
+                        this.gameCtx.strokeRect(gx * BLOCK_SIZE, gy * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                    }
+                });
+            }
+        }
+
+        drawGhost(piece, ghostY) {
+            if (!piece || ghostY <= piece.y) return;
+            const shape = piece.getShape();
+            for (let row = 0; row < shape.length; row++) {
+                for (let col = 0; col < shape[row].length; col++) {
+                    if (shape[row][col] && ghostY + row >= 0) {
+                        this.drawBlock(this.gameCtx, piece.x + col, ghostY + row, piece.color, BLOCK_SIZE, true);
+                    }
+                }
+            }
+        }
+
+        drawPreviewPiece(ctx, piece) {
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            if (!piece) return;
+            const shape = piece.getShape();
+            const pw = shape[0].length, ph = shape.length;
+            const offX = (ctx.canvas.width - pw * BATTLE_PREVIEW_BLOCK_SIZE) / 2;
+            const offY = (ctx.canvas.height - ph * BATTLE_PREVIEW_BLOCK_SIZE) / 2;
+            for (let r = 0; r < shape.length; r++) {
+                for (let c = 0; c < shape[r].length; c++) {
+                    if (shape[r][c]) {
+                        const x = offX + c * BATTLE_PREVIEW_BLOCK_SIZE;
+                        const y = offY + r * BATTLE_PREVIEW_BLOCK_SIZE;
+                        ctx.fillStyle = piece.color;
+                        ctx.fillRect(x + 1, y + 1, BATTLE_PREVIEW_BLOCK_SIZE - 2, BATTLE_PREVIEW_BLOCK_SIZE - 2);
+                    }
+                }
+            }
+        }
+
+        drawHold(piece, canUse = true) {
+            if (!canUse) this.holdCtx.globalAlpha = 0.4;
+            this.drawPreviewPiece(this.holdCtx, piece);
+            this.holdCtx.globalAlpha = 1;
+        }
+
+        drawNextPieces(pieces) {
+            pieces.forEach((p, i) => {
+                if (i < this.nextCtxs.length) this.drawPreviewPiece(this.nextCtxs[i], p);
+            });
+        }
+
+        updateScore(s) { this.scoreEl.textContent = s.toLocaleString(); }
+        updateLines(l) { this.linesEl.textContent = l; }
+        updateCombo(c) {
+            this.comboEl.textContent = c;
+            this.comboEl.style.color = c > 0 ? '#ffd700' : '#00d4ff';
+        }
+        updateKO(ko) { this.koEl.textContent = ko; }
+        updateLinesSent(lines) { this.linesSentEl.textContent = lines; }
+
+        updatePendingGarbage(count) {
+            this.garbageCount.textContent = count;
+            const percentage = Math.min(100, count * 10);
+            this.garbageBar.style.setProperty('--garbage-width', percentage + '%');
+        }
+
+        updateItems(slots, itemManager = null) {
+            slots.forEach((slot, i) => {
+                const slotEl = this.itemSlots[i];
+                if (!slotEl) return;
+                const iconEl = slotEl.querySelector('.item-icon');
+                const timerEl = slotEl.querySelector('.item-timer');
+
+                if (slot && slot.type && GOOD_ITEMS[slot.type]) {
+                    const itemInfo = GOOD_ITEMS[slot.type];
+                    iconEl.textContent = itemInfo.icon;
+                    slotEl.classList.add('has-item');
+                    if (itemManager) {
+                        const remaining = Math.ceil(itemManager.getItemTimeRemaining(i) / 1000);
+                        timerEl.textContent = remaining + 's';
+                        if (remaining <= 10) {
+                            slotEl.classList.add('item-expiring');
+                        } else {
+                            slotEl.classList.remove('item-expiring');
+                        }
+                    }
+                } else {
+                    iconEl.textContent = '';
+                    timerEl.textContent = '';
+                    slotEl.classList.remove('has-item', 'item-expiring');
+                }
+            });
+        }
+
+        showEffect(type, value) {
+            let el, className, clearTypeClass = '', duration = 1500;
+            switch (type) {
+                case 'combo':
+                    el = this.comboDisplay;
+                    el.textContent = value + ' COMBO!';
+                    className = 'show-combo';
+                    if (value >= 3) {
+                        this.shakeScreen(value >= 5 ? 'tetris' : 'normal');
+                    }
+                    break;
+                case 'clear':
+                    el = this.clearTypeDisplay;
+                    el.textContent = value;
+                    className = 'show-clear';
+                    if (value === 'SINGLE') {
+                        clearTypeClass = 'clear-single';
+                        duration = 1300;
+                    } else if (value === 'DOUBLE') {
+                        clearTypeClass = 'clear-double';
+                        duration = 1600;
+                        this.shakeScreen('normal');
+                    } else if (value === 'TRIPLE') {
+                        clearTypeClass = 'clear-triple';
+                        duration = 1900;
+                        this.shakeScreen('normal');
+                    } else if (value === 'TETRIS') {
+                        clearTypeClass = 'clear-tetris';
+                        duration = 2200;
+                        this.shakeScreen('tetris');
+                    }
+                    break;
+                case 'item':
+                case 'debuff':
+                case 'stage':
+                    el = this.clearTypeDisplay;
+                    el.textContent = value;
+                    className = type === 'debuff' ? 'show-debuff' : 'show-clear';
+                    break;
+                default:
+                    return;
+            }
+
+            if (this.effectTimers[type]) clearTimeout(this.effectTimers[type]);
+            el.classList.remove('hidden', 'show-combo', 'show-clear', 'show-debuff',
+                'clear-single', 'clear-double', 'clear-triple', 'clear-tetris');
+            void el.offsetWidth;
+            el.classList.add(className);
+            if (clearTypeClass) el.classList.add(clearTypeClass);
+            this.effectTimers[type] = setTimeout(() => {
+                el.classList.add('hidden');
+                el.classList.remove(className);
+                if (clearTypeClass) el.classList.remove(clearTypeClass);
+            }, duration);
+        }
+
+        shakeScreen(intensity = 'normal') {
+            const canvas = this.gameCanvas;
+            canvas.classList.remove('shake', 'tetris-shake');
+            void canvas.offsetWidth;
+            if (intensity === 'tetris') {
+                canvas.classList.add('tetris-shake');
+            } else {
+                canvas.classList.add('shake');
+            }
+            setTimeout(() => {
+                canvas.classList.remove('shake', 'tetris-shake');
+            }, intensity === 'tetris' ? 500 : 300);
+        }
+
+        render(board, piece, ghostY, holdPiece, canHold, nextPieces, showGhost = true) {
+            this.clearGameCanvas();
+            this.drawGrid();
+            this.drawBoard(board);
+            if (showGhost) this.drawGhost(piece, ghostY);
+            this.drawPiece(piece);
+            this.drawHold(holdPiece, canHold);
+            this.drawNextPieces(nextPieces);
+        }
+    }
+
+    // Battle Input Handler (handles inputs for both players)
+    class BattleInputHandler {
+        constructor(player1Callbacks, player2Callbacks, globalCallbacks) {
+            this.player1Callbacks = player1Callbacks;
+            this.player2Callbacks = player2Callbacks;
+            this.globalCallbacks = globalCallbacks;
+            this.keys = {};
+            this.repeatTimers = {};
+
+            this.boundKeyDown = e => this.onKeyDown(e);
+            this.boundKeyUp = e => this.onKeyUp(e);
+            document.addEventListener('keydown', this.boundKeyDown);
+            document.addEventListener('keyup', this.boundKeyUp);
+        }
+
+        destroy() {
+            document.removeEventListener('keydown', this.boundKeyDown);
+            document.removeEventListener('keyup', this.boundKeyUp);
+            this.stopAllRepeats();
+        }
+
+        onKeyDown(e) {
+            const k = e.code;
+            if (this.keys[k]) return;
+            this.keys[k] = true;
+
+            // Prevent default for game keys
+            if (this.isGameKey(k)) e.preventDefault();
+
+            // Global keys
+            if (k === 'KeyP' || k === 'Escape') {
+                this.globalCallbacks.onPause();
+                return;
+            }
+            if (k === 'KeyR') {
+                this.globalCallbacks.onRestart();
+                return;
+            }
+
+            // Player 1 keys
+            this.handlePlayerInput(k, 1, this.player1Callbacks);
+            // Player 2 keys
+            this.handlePlayerInput(k, 2, this.player2Callbacks);
+        }
+
+        handlePlayerInput(k, playerId, callbacks) {
+            const keys = PLAYER_KEYS[playerId];
+            if (keys.LEFT.includes(k)) {
+                callbacks.onLeft();
+                this.startRepeat(`p${playerId}-left`, () => callbacks.onLeft());
+            }
+            if (keys.RIGHT.includes(k)) {
+                callbacks.onRight();
+                this.startRepeat(`p${playerId}-right`, () => callbacks.onRight());
+            }
+            if (keys.SOFT_DROP.includes(k)) {
+                callbacks.onSoftDrop();
+                this.startRepeat(`p${playerId}-soft`, () => callbacks.onSoftDrop());
+            }
+            if (keys.HARD_DROP.includes(k)) callbacks.onHardDrop();
+            if (keys.ROTATE_CW.includes(k)) callbacks.onRotateCW();
+            if (keys.ROTATE_CCW.includes(k)) callbacks.onRotateCCW();
+            if (keys.HOLD.includes(k)) callbacks.onHold();
+            if (keys.ITEM_1.includes(k)) callbacks.onUseItem(0);
+            if (keys.ITEM_2.includes(k)) callbacks.onUseItem(1);
+            if (keys.ITEM_3.includes(k)) callbacks.onUseItem(2);
+        }
+
+        onKeyUp(e) {
+            const k = e.code;
+            this.keys[k] = false;
+
+            // Player 1
+            if (PLAYER_KEYS[1].LEFT.includes(k)) this.stopRepeat('p1-left');
+            if (PLAYER_KEYS[1].RIGHT.includes(k)) this.stopRepeat('p1-right');
+            if (PLAYER_KEYS[1].SOFT_DROP.includes(k)) this.stopRepeat('p1-soft');
+
+            // Player 2
+            if (PLAYER_KEYS[2].LEFT.includes(k)) this.stopRepeat('p2-left');
+            if (PLAYER_KEYS[2].RIGHT.includes(k)) this.stopRepeat('p2-right');
+            if (PLAYER_KEYS[2].SOFT_DROP.includes(k)) this.stopRepeat('p2-soft');
+        }
+
+        isGameKey(k) {
+            const allKeys = [
+                ...PLAYER_KEYS[1].LEFT, ...PLAYER_KEYS[1].RIGHT, ...PLAYER_KEYS[1].SOFT_DROP,
+                ...PLAYER_KEYS[1].HARD_DROP, ...PLAYER_KEYS[1].ROTATE_CW, ...PLAYER_KEYS[1].ROTATE_CCW,
+                ...PLAYER_KEYS[1].HOLD, ...PLAYER_KEYS[1].ITEM_1, ...PLAYER_KEYS[1].ITEM_2, ...PLAYER_KEYS[1].ITEM_3,
+                ...PLAYER_KEYS[2].LEFT, ...PLAYER_KEYS[2].RIGHT, ...PLAYER_KEYS[2].SOFT_DROP,
+                ...PLAYER_KEYS[2].HARD_DROP, ...PLAYER_KEYS[2].ROTATE_CW, ...PLAYER_KEYS[2].ROTATE_CCW,
+                ...PLAYER_KEYS[2].HOLD, ...PLAYER_KEYS[2].ITEM_1, ...PLAYER_KEYS[2].ITEM_2, ...PLAYER_KEYS[2].ITEM_3,
+                'KeyP', 'Escape', 'KeyR'
+            ];
+            return allKeys.includes(k);
+        }
+
+        startRepeat(action, fn) {
+            this.stopRepeat(action);
+            this.repeatTimers[action] = {
+                delay: setTimeout(() => {
+                    this.repeatTimers[action].interval = setInterval(fn, 50);
+                }, 170)
+            };
+        }
+
+        stopRepeat(action) {
+            if (this.repeatTimers[action]) {
+                clearTimeout(this.repeatTimers[action].delay);
+                clearInterval(this.repeatTimers[action].interval);
+                delete this.repeatTimers[action];
+            }
+        }
+
+        stopAllRepeats() {
+            Object.keys(this.repeatTimers).forEach(a => this.stopRepeat(a));
+        }
+    }
+
+    // Player Game - Individual player game logic for battle mode
+    class PlayerGame {
+        constructor(playerId, battleGame) {
+            this.playerId = playerId;
+            this.battleGame = battleGame;
+
+            this.board = new Board();
+            this.renderer = new PlayerRenderer(playerId);
+            this.scoreManager = new ScoreManager();
+            this.stageManager = new StageManager();
+            this.itemManager = new ItemManager();
+            this.pieceBag = new PieceBag();
+
+            this.currentPiece = null;
+            this.holdPiece = null;
+            this.canHold = true;
+            this.nextPieces = [];
+
+            this.lastDropTime = 0;
+            this.dropInterval = 1000;
+            this.isLocking = false;
+            this.lockStartTime = 0;
+            this.lockResetCount = 0;
+
+            this.pendingGarbage = 0;
+            this.ko = 0;
+            this.linesSent = 0;
+
+            // Debuff effects
+            this.isFrozen = false;
+            this.freezeEndTime = 0;
+            this.lastChaosTime = 0;
+            this.chaosInterval = 300;
+
+            // Item tracking
+            this.currentPieceHasItem = false;
+            this.currentItemType = null;
+
+            // Auto garbage for testing (every 15-20 seconds)
+            this.lastAutoGarbageTime = 0;
+            this.autoGarbageInterval = 15000 + Math.random() * 5000;
+
+            this.itemManager.onItemExpired = () => {
+                this.renderer.updateItems(this.itemManager.getSlots(), this.itemManager);
+            };
+        }
+
+        reset() {
+            this.board.reset();
+            this.scoreManager.reset();
+            this.stageManager.reset();
+            this.itemManager.reset();
+            this.pieceBag = new PieceBag();
+
+            this.holdPiece = null;
+            this.canHold = true;
+            this.isLocking = false;
+            this.lockResetCount = 0;
+            this.isFrozen = false;
+            this.freezeEndTime = 0;
+            this.pendingGarbage = 0;
+            this.dropInterval = this.stageManager.getDropInterval();
+            this.lastAutoGarbageTime = performance.now();
+            this.autoGarbageInterval = 15000 + Math.random() * 5000;
+
+            // Initialize obstacles if needed
+            if (this.stageManager.hasObstacles()) {
+                this.board.placeObstacles(this.stageManager.getObstacleCount());
+            }
+
+            // Fill next pieces
+            this.nextPieces = [];
+            for (let i = 0; i < 3; i++) {
+                this.nextPieces.push(new Piece(this.pieceBag.next()));
+            }
+
+            // Spawn first piece
+            this.spawnPiece();
+            this.updateUI();
+        }
+
+        update(time) {
+            // Check freeze effect
+            if (this.isFrozen && time >= this.freezeEndTime) {
+                this.isFrozen = false;
+            }
+
+            // Auto garbage lines (for testing - sends 1 line every 15-20 seconds)
+            if (time - this.lastAutoGarbageTime >= this.autoGarbageInterval) {
+                this.receiveGarbage(1);
+                this.lastAutoGarbageTime = time;
+                this.autoGarbageInterval = 15000 + Math.random() * 5000; // Randomize next interval
+            }
+
+            if (!this.currentPiece) return;
+
+            // Chaos effect
+            if (this.itemManager.hasDebuff('chaos') && time - this.lastChaosTime >= this.chaosInterval) {
+                const direction = Math.random() < 0.5 ? -1 : 1;
+                if (!this.board.collides(this.currentPiece, direction, 0)) {
+                    this.currentPiece.move(direction, 0);
+                }
+                this.lastChaosTime = time;
+            }
+
+            if (this.isLocking) {
+                if (time - this.lockStartTime >= LOCK_DELAY) {
+                    this.lockPiece();
+                }
+                return;
+            }
+
+            // Calculate drop interval (consider speed debuff)
+            let actualInterval = this.dropInterval;
+            if (this.itemManager.hasDebuff('speedUp')) {
+                actualInterval = this.dropInterval / 2;
+            }
+
+            if (!this.isFrozen && time - this.lastDropTime >= actualInterval) {
+                this.drop();
+                this.lastDropTime = time;
+            }
+        }
+
+        render() {
+            let ghostY = this.currentPiece ? this.board.getGhostY(this.currentPiece) : 0;
+            const showGhost = !this.itemManager.hasDebuff('noGhost');
+            this.renderer.render(
+                this.board,
+                this.currentPiece,
+                ghostY,
+                this.holdPiece,
+                this.canHold,
+                this.nextPieces,
+                showGhost
+            );
+        }
+
+        spawnPiece() {
+            this.currentPiece = this.nextPieces.shift();
+            this.nextPieces.push(new Piece(this.pieceBag.next()));
+
+            const sx = this.board.getSpawnX(this.currentPiece);
+            const sy = this.board.getSpawnY();
+            this.currentPiece.setPosition(sx, sy);
+
+            // Check for game over
+            if (this.board.collides(this.currentPiece, 0, 0)) {
+                this.onKO();
+                return;
+            }
+
+            this.canHold = true;
+            this.isLocking = false;
+            this.lockResetCount = 0;
+
+            // Decide if this is an item piece
+            this.currentPieceHasItem = false;
+            this.currentItemType = null;
+
+            if (this.stageManager.hasGoodItems() && Math.random() < this.stageManager.getGoodItemChance()) {
+                this.currentPieceHasItem = true;
+                this.currentItemType = { type: 'good', item: this.itemManager.getRandomGoodItem() };
+                this.currentPiece.isItemPiece = true;
+                this.currentPiece.itemType = 'good';
+            } else if (this.stageManager.hasBadItems() && Math.random() < this.stageManager.getBadItemChance()) {
+                this.currentPieceHasItem = true;
+                this.currentItemType = { type: 'bad', item: this.itemManager.getRandomBadItem() };
+                this.currentPiece.isItemPiece = true;
+                this.currentPiece.itemType = 'bad';
+                this.itemManager.applyDebuff(this.currentItemType.item);
+                this.renderer.showEffect('debuff', BAD_ITEMS[this.currentItemType.item].name);
+            }
+        }
+
+        onKO() {
+            // Opponent gets a KO
+            this.battleGame.onPlayerKO(this.playerId);
+            // Reset this player
+            this.reset();
+        }
+
+        drop() {
+            if (!this.currentPiece) return;
+            if (!this.board.collides(this.currentPiece, 0, 1)) {
+                this.currentPiece.move(0, 1);
+                this.cancelLock();
+            } else {
+                this.startLock();
+            }
+        }
+
+        moveLeft() {
+            if (!this.currentPiece) return;
+            const direction = this.itemManager.hasDebuff('reverse') ? 1 : -1;
+            if (!this.board.collides(this.currentPiece, direction, 0)) {
+                this.currentPiece.move(direction, 0);
+                this.resetLock();
+            }
+        }
+
+        moveRight() {
+            if (!this.currentPiece) return;
+            const direction = this.itemManager.hasDebuff('reverse') ? -1 : 1;
+            if (!this.board.collides(this.currentPiece, direction, 0)) {
+                this.currentPiece.move(direction, 0);
+                this.resetLock();
+            }
+        }
+
+        softDrop() {
+            if (!this.currentPiece || this.isFrozen) return;
+            if (!this.board.collides(this.currentPiece, 0, 1)) {
+                this.currentPiece.move(0, 1);
+                this.cancelLock();
+                this.lastDropTime = performance.now();
+            }
+        }
+
+        hardDrop() {
+            if (!this.currentPiece) return;
+            const dist = this.board.getDropDistance(this.currentPiece);
+            this.currentPiece.move(0, dist);
+            this.lockPiece();
+        }
+
+        rotateCW() {
+            if (!this.currentPiece) return;
+            const r = this.board.tryRotate(this.currentPiece, true);
+            if (r.success) {
+                this.currentPiece.setRotation(r.newRotation);
+                this.currentPiece.move(r.kickX, r.kickY);
+                this.resetLock();
+            }
+        }
+
+        rotateCCW() {
+            if (!this.currentPiece) return;
+            const r = this.board.tryRotate(this.currentPiece, false);
+            if (r.success) {
+                this.currentPiece.setRotation(r.newRotation);
+                this.currentPiece.move(r.kickX, r.kickY);
+                this.resetLock();
+            }
+        }
+
+        hold() {
+            if (!this.currentPiece || !this.canHold) return;
+
+            const currentType = this.currentPiece.type;
+
+            if (this.holdPiece === null) {
+                this.holdPiece = new Piece(currentType);
+                this.spawnPiece();
+            } else {
+                const holdType = this.holdPiece.type;
+                this.holdPiece = new Piece(currentType);
+                this.currentPiece = new Piece(holdType);
+                this.currentPiece.setPosition(
+                    this.board.getSpawnX(this.currentPiece),
+                    this.board.getSpawnY()
+                );
+            }
+
+            this.canHold = false;
+            this.isLocking = false;
+            this.lockResetCount = 0;
+        }
+
+        useItem(slotIndex) {
+            const item = this.itemManager.useItem(slotIndex);
+            if (!item) return;
+
+            // Get opponent for attack items
+            const opponent = this.battleGame.getOpponent(this.playerId);
+
+            switch (item) {
+                case 'bomb':
+                    // Bomb clears 5x5 area around YOUR current piece (helps yourself)
+                    if (this.currentPiece) {
+                        const cx = this.currentPiece.x + 2;
+                        const cy = this.currentPiece.y + 2;
+                        this.board.clearArea(cx - 2, cy - 2, 5, 5);
+                    }
+                    break;
+                case 'lineClear':
+                    // Clear YOUR bottom line (helps yourself)
+                    this.board.clearBottomLine();
+                    break;
+                case 'freeze':
+                    // Freeze OPPONENT for 5 seconds (attacks opponent)
+                    if (opponent) {
+                        opponent.isFrozen = true;
+                        opponent.freezeEndTime = performance.now() + 5000;
+                        opponent.renderer.showEffect('debuff', '被凍結！');
+                    }
+                    break;
+                case 'transform':
+                    // Transform YOUR piece (helps yourself) - random piece type in battle mode
+                    if (this.currentPiece) {
+                        const x = this.currentPiece.x;
+                        const y = this.currentPiece.y;
+                        const currentType = this.currentPiece.type;
+                        // Choose a different random piece type
+                        let newType;
+                        do {
+                            newType = PIECE_TYPES[Math.floor(Math.random() * PIECE_TYPES.length)];
+                        } while (newType === currentType);
+                        this.currentPiece = new Piece(newType);
+                        this.currentPiece.setPosition(x, y);
+                        if (this.board.collides(this.currentPiece, 0, 0)) {
+                            this.currentPiece.setPosition(this.board.getSpawnX(this.currentPiece), this.board.getSpawnY());
+                        }
+                        this.renderer.showEffect('item', `變成 ${newType} 型方塊`);
+                    }
+                    break;
+                case 'hammer':
+                    // Clear YOUR obstacles (helps yourself)
+                    this.board.clearObstacles();
+                    break;
+            }
+            this.renderer.showEffect('item', GOOD_ITEMS[item].name);
+            this.renderer.updateItems(this.itemManager.getSlots(), this.itemManager);
+        }
+
+        startLock() {
+            if (!this.isLocking) {
+                this.isLocking = true;
+                this.lockStartTime = performance.now();
+            }
+        }
+
+        resetLock() {
+            if (this.isLocking && this.lockResetCount < LOCK_DELAY_RESET_LIMIT) {
+                if (this.board.collides(this.currentPiece, 0, 1)) {
+                    this.lockStartTime = performance.now();
+                    this.lockResetCount++;
+                } else {
+                    this.cancelLock();
+                }
+            }
+        }
+
+        cancelLock() {
+            this.isLocking = false;
+            this.lockResetCount = 0;
+        }
+
+        lockPiece() {
+            if (!this.currentPiece) return;
+
+            // Apply pending garbage first
+            if (this.pendingGarbage > 0) {
+                this.board.addGarbageLines(this.pendingGarbage);
+                this.pendingGarbage = 0;
+                this.renderer.updatePendingGarbage(0);
+            }
+
+            this.board.lockPiece(this.currentPiece);
+
+            // Handle item piece
+            if (this.currentPieceHasItem && this.currentItemType) {
+                if (this.currentItemType.type === 'good') {
+                    const result = this.itemManager.tryAddItem(this.currentItemType.item);
+                    if (result.added) {
+                        this.renderer.showEffect('item', '獲得 ' + GOOD_ITEMS[this.currentItemType.item].name);
+                    }
+                    this.renderer.updateItems(this.itemManager.getSlots(), this.itemManager);
+                }
+            }
+
+            const cleared = this.board.clearLines();
+            const linesCleared = cleared.length;
+
+            if (linesCleared > 0) {
+                const stage = this.stageManager.getStage();
+                const result = this.scoreManager.addLineScore(linesCleared, stage);
+
+                // Show clear effect
+                if (result.clearType) {
+                    this.renderer.showEffect('clear', result.clearType);
+                }
+                if (result.combo > 1) {
+                    this.renderer.showEffect('combo', result.combo);
+                }
+
+                // Calculate garbage to send
+                const baseGarbage = GARBAGE_TABLE[linesCleared] || 0;
+                const comboBonus = result.combo > 1 ? result.combo - 1 : 0;
+                const totalGarbage = baseGarbage + comboBonus;
+
+                if (totalGarbage > 0) {
+                    this.battleGame.sendGarbage(this.playerId, totalGarbage);
+                    this.linesSent += totalGarbage;
+                    this.renderer.updateLinesSent(this.linesSent);
+                }
+
+                // Update stage progress
+                const stageResult = this.stageManager.addLines(linesCleared);
+                if (stageResult.stageCleared && !stageResult.gameComplete) {
+                    this.dropInterval = this.stageManager.getDropInterval();
+                    if (this.stageManager.hasObstacles()) {
+                        this.board.clearObstacles();
+                        this.board.placeObstacles(this.stageManager.getObstacleCount());
+                    }
+                }
+            } else {
+                this.scoreManager.addLineScore(0);
+            }
+
+            // Check game over
+            if (this.board.isGameOver()) {
+                this.onKO();
+                return;
+            }
+
+            this.currentPiece = null;
+            this.isLocking = false;
+            this.lockResetCount = 0;
+            this.spawnPiece();
+            this.lastDropTime = performance.now();
+            this.updateUI();
+        }
+
+        receiveGarbage(count) {
+            this.pendingGarbage += count;
+            this.renderer.updatePendingGarbage(this.pendingGarbage);
+        }
+
+        updateUI() {
+            this.renderer.updateScore(this.scoreManager.getScore());
+            this.renderer.updateLines(this.scoreManager.getLines());
+            this.renderer.updateCombo(this.scoreManager.getCombo());
+            this.renderer.updateKO(this.ko);
+            this.renderer.updateLinesSent(this.linesSent);
+            this.renderer.updateItems(this.itemManager.getSlots(), this.itemManager);
+        }
+    }
+
+    // Battle Game - Manages the entire battle between two players
+    class BattleGame {
+        constructor() {
+            this.player1 = new PlayerGame(1, this);
+            this.player2 = new PlayerGame(2, this);
+
+            this.state = GAME_STATE.IDLE;
+            this.matchTime = BATTLE_DURATION;
+            this.matchStartTime = 0;
+            this.animationId = null;
+            this.lastTime = 0;
+
+            this.timerEl = document.getElementById('battle-time-remaining');
+            this.battleOverlay = document.getElementById('battle-overlay');
+            this.resultTitle = document.getElementById('battle-result-title');
+            this.resultP1KO = document.getElementById('result-p1-ko');
+            this.resultP1Lines = document.getElementById('result-p1-lines');
+            this.resultP2KO = document.getElementById('result-p2-ko');
+            this.resultP2Lines = document.getElementById('result-p2-lines');
+            this.winnerText = document.getElementById('battle-winner-text');
+
+            this.inputHandler = new BattleInputHandler(
+                {
+                    onLeft: () => this.player1Input('moveLeft'),
+                    onRight: () => this.player1Input('moveRight'),
+                    onSoftDrop: () => this.player1Input('softDrop'),
+                    onHardDrop: () => this.player1Input('hardDrop'),
+                    onRotateCW: () => this.player1Input('rotateCW'),
+                    onRotateCCW: () => this.player1Input('rotateCCW'),
+                    onHold: () => this.player1Input('hold'),
+                    onUseItem: (slot) => this.player1Input('useItem', slot)
+                },
+                {
+                    onLeft: () => this.player2Input('moveLeft'),
+                    onRight: () => this.player2Input('moveRight'),
+                    onSoftDrop: () => this.player2Input('softDrop'),
+                    onHardDrop: () => this.player2Input('hardDrop'),
+                    onRotateCW: () => this.player2Input('rotateCW'),
+                    onRotateCCW: () => this.player2Input('rotateCCW'),
+                    onHold: () => this.player2Input('hold'),
+                    onUseItem: (slot) => this.player2Input('useItem', slot)
+                },
+                {
+                    onPause: () => this.togglePause(),
+                    onRestart: () => this.restart()
+                }
+            );
+        }
+
+        player1Input(action, ...args) {
+            if (this.state !== GAME_STATE.PLAYING) return;
+            this.player1[action](...args);
+        }
+
+        player2Input(action, ...args) {
+            if (this.state !== GAME_STATE.PLAYING) return;
+            this.player2[action](...args);
+        }
+
+        getOpponent(playerId) {
+            return playerId === 1 ? this.player2 : this.player1;
+        }
+
+        start() {
+            this.player1.reset();
+            this.player2.reset();
+
+            this.player1.ko = 0;
+            this.player2.ko = 0;
+            this.player1.linesSent = 0;
+            this.player2.linesSent = 0;
+
+            this.state = GAME_STATE.PLAYING;
+            this.matchStartTime = performance.now();
+            this.lastTime = this.matchStartTime;
+            this.battleOverlay.classList.add('hidden');
+
+            this.gameLoop(this.matchStartTime);
+        }
+
+        gameLoop(time) {
+            if (this.state !== GAME_STATE.PLAYING) {
+                this.animationId = null;
+                return;
+            }
+
+            this.lastTime = time;
+            this.update(time);
+            this.render();
+
+            this.animationId = requestAnimationFrame(t => this.gameLoop(t));
+        }
+
+        update(time) {
+            // Update timer
+            const elapsed = time - this.matchStartTime;
+            const remaining = Math.max(0, this.matchTime - elapsed);
+            this.updateTimer(remaining);
+
+            if (remaining <= 0) {
+                this.endMatch();
+                return;
+            }
+
+            // Update both players
+            this.player1.update(time);
+            this.player2.update(time);
+        }
+
+        render() {
+            this.player1.render();
+            this.player2.render();
+        }
+
+        updateTimer(remaining) {
+            const minutes = Math.floor(remaining / 60000);
+            const seconds = Math.floor((remaining % 60000) / 1000);
+            this.timerEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+            if (remaining <= 30000) {
+                this.timerEl.classList.add('warning');
+            } else {
+                this.timerEl.classList.remove('warning');
+            }
+        }
+
+        sendGarbage(fromPlayerId, count) {
+            if (fromPlayerId === 1) {
+                this.player2.receiveGarbage(count);
+            } else {
+                this.player1.receiveGarbage(count);
+            }
+        }
+
+        onPlayerKO(playerId) {
+            // The other player gets a KO
+            if (playerId === 1) {
+                this.player2.ko++;
+                this.player2.renderer.updateKO(this.player2.ko);
+            } else {
+                this.player1.ko++;
+                this.player1.renderer.updateKO(this.player1.ko);
+            }
+        }
+
+        togglePause() {
+            if (this.state === GAME_STATE.PLAYING) {
+                this.state = GAME_STATE.PAUSED;
+                this.inputHandler.stopAllRepeats();
+            } else if (this.state === GAME_STATE.PAUSED) {
+                this.state = GAME_STATE.PLAYING;
+                // Adjust match start time to account for pause
+                const pauseDuration = performance.now() - this.lastTime;
+                this.matchStartTime += pauseDuration;
+                this.lastTime = performance.now();
+                this.gameLoop(this.lastTime);
+            }
+        }
+
+        restart() {
+            this.destroy();
+            window.battleGame = null;
+            // Return to mode selection
+            document.getElementById('battle-container').classList.add('hidden');
+            document.getElementById('mode-selection').classList.remove('hidden');
+            this.state = GAME_STATE.IDLE;
+        }
+
+        endMatch() {
+            this.state = GAME_STATE.GAME_OVER;
+            this.inputHandler.stopAllRepeats();
+            if (this.animationId) {
+                cancelAnimationFrame(this.animationId);
+                this.animationId = null;
+            }
+
+            // Show results
+            this.resultP1KO.textContent = this.player1.ko;
+            this.resultP1Lines.textContent = this.player1.linesSent;
+            this.resultP2KO.textContent = this.player2.ko;
+            this.resultP2Lines.textContent = this.player2.linesSent;
+
+            // Determine winner
+            let winner;
+            if (this.player1.ko > this.player2.ko) {
+                winner = '玩家 1 獲勝！';
+            } else if (this.player2.ko > this.player1.ko) {
+                winner = '玩家 2 獲勝！';
+            } else if (this.player1.linesSent > this.player2.linesSent) {
+                winner = '玩家 1 獲勝！(送出行數較多)';
+            } else if (this.player2.linesSent > this.player1.linesSent) {
+                winner = '玩家 2 獲勝！(送出行數較多)';
+            } else {
+                winner = '平手！';
+            }
+            this.winnerText.textContent = winner;
+
+            this.battleOverlay.classList.remove('hidden');
+
+            // 播放對戰結束特效
+            if (window.effectsManager) {
+                if (winner !== '平手！') {
+                    // 有勝者，播放勝利慶祝
+                    window.effectsManager.createFireworks(6);
+                    window.effectsManager.createConfetti(50);
+                } else {
+                    // 平手，播放溫和效果
+                    window.effectsManager.createConfetti(30, ['#ffeaa7', '#74b9ff', '#a29bfe']);
+                }
+            }
+
+            // Handle Enter key to return to menu
+            const handleEnter = (e) => {
+                if (e.code === 'Enter') {
+                    document.removeEventListener('keydown', handleEnter);
+                    this.restart();
+                }
+            };
+            document.addEventListener('keydown', handleEnter);
+        }
+
+        destroy() {
+            this.inputHandler.destroy();
+            if (this.animationId) {
+                cancelAnimationFrame(this.animationId);
+                this.animationId = null;
+            }
         }
     }
 
     // ============== Initialize ==============
+    let currentGameMode = null;
+
+    function initModeSelection() {
+        const modeSelection = document.getElementById('mode-selection');
+        const singleBtn = document.getElementById('single-mode-btn');
+        const battleBtn = document.getElementById('battle-mode-btn');
+
+        // Mode button click handlers
+        singleBtn.addEventListener('click', () => selectMode(GAME_MODE.SINGLE));
+        battleBtn.addEventListener('click', () => selectMode(GAME_MODE.BATTLE));
+
+        // Keyboard shortcuts for mode selection
+        document.addEventListener('keydown', (e) => {
+            if (!modeSelection.classList.contains('hidden')) {
+                if (e.code === 'Digit1' || e.code === 'Numpad1') {
+                    selectMode(GAME_MODE.SINGLE);
+                } else if (e.code === 'Digit2' || e.code === 'Numpad2') {
+                    selectMode(GAME_MODE.BATTLE);
+                }
+            }
+        });
+    }
+
+    function selectMode(mode) {
+        // Destroy any existing game instances to remove event listeners
+        if (window.tetrisGame) {
+            window.tetrisGame.destroy();
+            window.tetrisGame = null;
+        }
+        if (window.battleGame) {
+            window.battleGame.destroy();
+            window.battleGame = null;
+        }
+
+        currentGameMode = mode;
+        const modeSelection = document.getElementById('mode-selection');
+        const singlePlayerContainer = document.getElementById('single-player-container');
+        const battleContainer = document.getElementById('battle-container');
+
+        modeSelection.classList.add('hidden');
+
+        if (mode === GAME_MODE.SINGLE) {
+            // Single player mode
+            singlePlayerContainer.classList.remove('hidden');
+            battleContainer.classList.add('hidden');
+            window.tetrisGame = new Game();
+            console.log('Single player mode started');
+        } else {
+            // Battle mode
+            singlePlayerContainer.classList.add('hidden');
+            battleContainer.classList.remove('hidden');
+            initBattleMode();
+            console.log('Battle mode started');
+        }
+    }
+
+    function initBattleMode() {
+        // Create and start the battle game
+        window.battleGame = new BattleGame();
+        window.battleGame.start();
+        console.log('Battle mode started!');
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
-        window.tetrisGame = new Game();
+        // Initialize mode selection
+        initModeSelection();
 
         // 說明面板展開/收合
         const helpPanel = document.getElementById('help-panel');
@@ -1854,8 +3530,11 @@
             helpToggle.setAttribute('aria-label', isCollapsed ? '展開說明' : '收合說明');
         });
 
-        console.log('Tetris ready! Press Enter to start.');
+        console.log('Tetris ready! Select game mode to start.');
     });
     </script>
+
+    <!-- 夢幻泡泡風格特效系統 -->
+    <script src="src/effects.js"></script>
 </body>
 </html>
