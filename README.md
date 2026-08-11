@@ -1,6 +1,6 @@
 # Tetris Battle - 俄羅斯方塊對戰
 
-一個現代化的俄羅斯方塊遊戲，支援**單人闯關**與**雙人對戰**模式，具有關卡系統、道具、障礙物等進階功能，使用純 HTML5 + CSS3 + JavaScript 實現。
+一個現代化的俄羅斯方塊遊戲，支援**單人闖關**與**雙人對戰**模式，具有關卡系統、道具、障礙物等進階功能，使用純 HTML5 + CSS3 + JavaScript 實現。
 
 ![Version](https://img.shields.io/badge/version-4.3.5-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
